@@ -11,13 +11,17 @@ import java.util.Map;
 
 /**
  * Classe Controller che gestisce tutte le operazioni relative alle Categorie.
- * Mantiene l'elenco delle categorie esistenti e permette di aggiungerne di
- * nuove.
+ * Mantiene l'elenco delle categorie radice esistenti e permette di aggiungerne
+ * di nuove
+ * e di gestire la gerarchia.
  * Gestisce inoltre i Campi Base (immutabili) e i Campi Comuni (modificabili).
  */
 public class GestoreCategorie implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    // Mappa di tutte le categorie nel sistema, per ricerca rapida (Nome ->
+    // Categoria)
+    // Contiene sia radici che sottocategorie
     private Map<String, Categoria> categorie;
 
     // Lista dei Campi Base (obbligatori per tutte le categorie)
@@ -52,37 +56,56 @@ public class GestoreCategorie implements Serializable {
     }
 
     /**
-     * Aggiunge una nuova categoria al sistema, includendo automaticamente i campi
-     * Base e Comuni.
+     * Aggiunge una nuova categoria al sistema (come radice o sottocategoria),
+     * includendo automaticamente i campi Base e Comuni (o ereditandoli dal padre).
      * 
-     * @param categoria La categoria da aggiungere (con già i suoi campi specifici).
-     * @throws IllegalArgumentException se la categoria esiste già.
+     * @param categoria La categoria da aggiungere.
+     * @param nomePadre Il nome della categoria padre. Se null, aggiunge come
+     *                  radice.
+     * @throws IllegalArgumentException se la categoria esiste già o il padre non
+     *                                  esiste.
      */
-    public void aggiungiCategoria(Categoria categoria) {
+    public void aggiungiCategoria(Categoria categoria, String nomePadre) {
         assert categoria != null : "La categoria non può essere nulla";
         if (categorie.containsKey(categoria.getNome())) {
             throw new IllegalArgumentException("Categoria già esistente: " + categoria.getNome());
         }
 
-        // Aggiunge i campi Base alla categoria
-        for (Campo c : campiBase) {
-            try {
-                categoria.aggiungiCampo(c);
-            } catch (IllegalArgumentException e) {
-                // Ignora se già presente
+        if (nomePadre == null || nomePadre.isBlank()) {
+            // È una categoria radice, aggiungiamo campi base e comuni
+            for (Campo c : campiBase) {
+                try {
+                    categoria.aggiungiCampo(c);
+                } catch (IllegalArgumentException e) {
+                }
             }
-        }
-
-        // Aggiunge i campi Comuni correnti alla categoria
-        for (Campo c : campiComuni) {
-            try {
-                categoria.aggiungiCampo(c);
-            } catch (IllegalArgumentException e) {
-                // Ignora duplicati
+            for (Campo c : campiComuni) {
+                try {
+                    categoria.aggiungiCampo(c);
+                } catch (IllegalArgumentException e) {
+                }
             }
+        } else {
+            // È una sottocategoria, il padre la aggiunge e le passa i suoi campi (che
+            // includono base e comuni)
+            Categoria padre = getCategoria(nomePadre);
+            if (padre == null) {
+                throw new IllegalArgumentException("Categoria padre non trovata: " + nomePadre);
+            }
+            padre.aggiungiSottocategoria(categoria);
         }
 
         categorie.put(categoria.getNome(), categoria);
+    }
+
+    /**
+     * Metodo di supporto per aggiungere una categoria radice (mantenendo la firma
+     * originale per comodità o retrocompatibilità).
+     * 
+     * @param categoria La categoria da aggiungere come radice.
+     */
+    public void aggiungiCategoria(Categoria categoria) {
+        aggiungiCategoria(categoria, null);
     }
 
     /**
@@ -114,20 +137,53 @@ public class GestoreCategorie implements Serializable {
 
     /**
      * Rimuove una categoria dal sistema.
+     * Se la categoria ha un padre, viene rimossa dalle sottocategorie del padre.
+     * Rimuove anche a cascata tutte le sue sottocategorie dalla mappa generale.
      * 
      * @param nome Nome della categoria da rimuovere.
      */
     public void rimuoviCategoria(String nome) {
-        categorie.remove(nome);
+        Categoria daRimuovere = categorie.get(nome);
+        if (daRimuovere != null) {
+            if (daRimuovere.getPadre() != null) {
+                daRimuovere.getPadre().rimuoviSottocategoria(daRimuovere);
+            }
+            rimuoviCategoriaRicorsivamente(daRimuovere);
+        }
+    }
+
+    private void rimuoviCategoriaRicorsivamente(Categoria cat) {
+        // Usa una lista temporanea per evitare ConcurrentModificationException
+        List<Categoria> subCats = new ArrayList<>(cat.getSottocategorie());
+        for (Categoria sub : subCats) {
+            rimuoviCategoriaRicorsivamente(sub);
+        }
+        categorie.remove(cat.getNome());
     }
 
     /**
-     * Restituisce tutte le categorie presenti nel sistema.
+     * Restituisce tutte le categorie presenti nel sistema (mappa piatta).
      * 
-     * @return Una mappa contenente le categorie.
+     * @return Una mappa contenente tutte le categorie.
      */
     public Map<String, Categoria> getCategorie() {
         return new HashMap<>(categorie);
+    }
+
+    /**
+     * Restituisce solo le categorie radice (che non hanno padre), utili per la
+     * visualizzazione dell'albero base.
+     * 
+     * @return Una lista di categorie radice.
+     */
+    public List<Categoria> getCategorieRadice() {
+        List<Categoria> radici = new ArrayList<>();
+        for (Categoria c : categorie.values()) {
+            if (c.getPadre() == null) {
+                radici.add(c);
+            }
+        }
+        return radici;
     }
 
     public List<Campo> getCampiBase() {

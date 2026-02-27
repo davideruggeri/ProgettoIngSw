@@ -159,9 +159,19 @@ public class MainCLI {
         if (gestoreCategorie.getCategorie().isEmpty()) {
             vista.stampaMessaggio("Nessuna categoria definita.");
         } else {
-            for (Categoria c : gestoreCategorie.getCategorie().values()) {
-                vista.stampaMessaggio(c.toString());
-                vista.stampaMessaggio("-------------------");
+            vista.stampaMessaggio("\n--- ELENCO CATEGORIE ---");
+            for (Categoria c : gestoreCategorie.getCategorieRadice()) {
+                stampaCategoriaRicorsiva(c, "");
+            }
+            vista.stampaMessaggio("------------------------\n");
+        }
+    }
+
+    private void stampaCategoriaRicorsiva(Categoria c, String indent) {
+        vista.stampaMessaggio(indent + "- " + c.getNome() + " (" + c.getCampi().size() + " campi specifici)");
+        if (!c.getSottocategorie().isEmpty()) {
+            for (Categoria sub : c.getSottocategorie()) {
+                stampaCategoriaRicorsiva(sub, indent + "  ");
             }
         }
     }
@@ -175,11 +185,18 @@ public class MainCLI {
 
         Categoria nuovaCategoria = new Categoria(nome, descrizione);
 
-        // Nota: I Campi Base e Comuni vengono aggiunti automaticamente da
-        // GestoreCategorie
-        // quando chiamiamo aggiungiCategoria. Qui chiediamo solo i Campi Specifici.
+        // Scelta padre
+        String nomePadre = null;
+        if (!gestoreCategorie.getCategorie().isEmpty()
+                && vista.leggiBooleano("Questa categoria è una Sottocategoria di un'altra esistente?")) {
+            nomePadre = vista.leggiStringa("Inserisci il nome esatto della Categoria Padre");
+            if (gestoreCategorie.getCategoria(nomePadre) == null) {
+                vista.stampaMessaggio("Errore: Categoria padre non trovata. Creazione annullata.");
+                return;
+            }
+        }
 
-        vista.stampaMessaggio("I Campi Base e Comuni verranno aggiunti automaticamente.");
+        vista.stampaMessaggio("I Campi Base e Comuni verranno aggiunti/ereditati automaticamente.");
 
         boolean aggiuntaCampi = true;
         while (aggiuntaCampi) {
@@ -190,9 +207,8 @@ public class MainCLI {
 
                 vista.stampaMessaggio("Tipi: 0=STRINGA, 1=INTERO, 2=BOOLEANO, 3=DATA, 4=ORA");
                 int idxTipo = vista.leggiIntero("Tipo Campo");
-                TipoCampo tipo = TipoCampo.values()[Math.min(Math.max(0, idxTipo), TipoCampo.values().length - 1)];
-
                 try {
+                    TipoCampo tipo = TipoCampo.values()[Math.min(Math.max(0, idxTipo), TipoCampo.values().length - 1)];
                     nuovaCategoria.aggiungiCampo(new Campo(nomeCampo, descCampo, obbligatorio, tipo));
                 } catch (Exception e) {
                     vista.stampaMessaggio("Errore aggiunta campo: " + e.getMessage());
@@ -203,7 +219,7 @@ public class MainCLI {
         }
 
         try {
-            gestoreCategorie.aggiungiCategoria(nuovaCategoria);
+            gestoreCategorie.aggiungiCategoria(nuovaCategoria, nomePadre);
             vista.stampaMessaggio("Categoria creata con successo.");
         } catch (IllegalArgumentException e) {
             vista.stampaMessaggio("Errore: " + e.getMessage());

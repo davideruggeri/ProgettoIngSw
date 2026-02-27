@@ -24,12 +24,13 @@ public class JsonUtil {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");
 
-        // Categorie
+        // Categorie (salviamo solo le radici, le sottocategorie saranno annidate)
         sb.append("  \"categorie\": [\n");
         int i = 0;
-        for (Categoria c : gestore.getCategorie().values()) {
+        List<Categoria> radici = gestore.getCategorieRadice();
+        for (Categoria c : radici) {
             sb.append(scriviCategoria(c, "    "));
-            if (i < gestore.getCategorie().size() - 1)
+            if (i < radici.size() - 1)
                 sb.append(",\n");
             else
                 sb.append("\n");
@@ -55,9 +56,29 @@ public class JsonUtil {
         sb.append(indent).append("{\n");
         sb.append(indent).append("  \"nome\": \"").append(escape(c.getNome())).append("\",\n");
         sb.append(indent).append("  \"descrizione\": \"").append(escape(c.getDescrizione())).append("\",\n");
+
         sb.append(indent).append("  \"campi\": ")
                 .append(scriviListaCampi(new ArrayList<>(c.getCampi().values()), indent + "  "));
-        sb.append("\n").append(indent).append("}");
+
+        // Sottocategorie ricorsive
+        if (!c.getSottocategorie().isEmpty()) {
+            sb.append(",\n").append(indent).append("  \"sottocategorie\": [\n");
+            int i = 0;
+            List<Categoria> subs = c.getSottocategorie();
+            for (Categoria sub : subs) {
+                sb.append(scriviCategoria(sub, indent + "    "));
+                if (i < subs.size() - 1)
+                    sb.append(",\n");
+                else
+                    sb.append("\n");
+                i++;
+            }
+            sb.append(indent).append("  ]\n");
+        } else {
+            sb.append("\n"); // chiusura dopo campi
+        }
+
+        sb.append(indent).append("}");
         return sb.toString();
     }
 
@@ -116,13 +137,24 @@ public class JsonUtil {
         GestoreCategorie gestore = new GestoreCategorie();
         // Parsing molto semplificato basato su regex per trovare blocchi
 
-        // 1. Estrai Categorie
-        List<Categoria> categorie = estraiListaCategorie(json);
-        for (Categoria c : categorie) {
+        // 1. Estrai Categorie (partendo dalle radici)
+        // Siccome estraiListaCategorie in questo parser molto grezzo fa fatica con la
+        // ricorsione nidificata delle {},
+        // usiamo un trucco per parsing custom oppure dobbiamo migliorare il parser
+        // manuale.
+        // Dato che ci è richiesto zero-dependency, proviamo ad affidarci a un parsing
+        // più robusto per l'albero.
+
+        List<Categoria> categorieRadice = estraiAlberoCategorie(estraiBlocco(json, "categorie"));
+        for (Categoria c : categorieRadice) {
             try {
+                // Aggiungiamo partendo dalla radice. Il metodo nel gestore gestisce già
+                // l'albero
+                // Modifichiamo il gestore temporaneamente per aggiungere la radice, poi
+                // aggiungiamo ricorsivamente i figli
                 gestore.aggiungiCategoria(c);
+                aggiungiSottocategorieRicorsive(gestore, c);
             } catch (Exception e) {
-                // Ignora duplicati o errori
             }
         }
 
@@ -139,7 +171,7 @@ public class JsonUtil {
 
     public static List<Utente> leggiUtenti(String json) {
         List<Utente> utenti = new ArrayList<>();
-        List<String> blocchiUtenti = estraiOggetti(estraiBlocco(json, "utenti"));
+        List<String> blocchiUtenti = estraiOggettiTopLevel(estraiBlocco(json, "utenti"));
 
         for (String blocco : blocchiUtenti) {
             String nome = estraiValore(blocco, "nomeUtente");
@@ -159,23 +191,29 @@ public class JsonUtil {
 
     // --- HELPER DI PARSING ---
 
-    private static List<Categoria> estraiListaCategorie(String json) {
+    private static void aggiungiSottocategorieRicorsive(GestoreCategorie gestore, Categoria padre) {
+        for (Categoria sub : padre.getSottocategorie()) {
+            try {
+                gestore.aggiungiCategoria(sub, padre.getNome());
+                aggiungiSottocategorieRicorsive(gestore, sub);
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    // Nuova implementazione per supportare alberi gerarchici
+    private static List<Categoria> estraiAlberoCategorie(String arrayContent) {
         List<Categoria> list = new ArrayList<>();
-        String arrayContent = estraiBlocco(json, "categorie");
-        if (arrayContent == null)
+        if (arrayContent == null || arrayContent.trim().isEmpty())
             return list;
 
-        // Categorie contengono campi annidati, qui la regex semplice fallisce se usiamo
-        // matcher su }
-        // Dobbiamo estrarre gli oggetti bilanciati.
-        // Dato che non abbiamo librerie, assumiamo che le graffe siano bilanciate.
-
-        List<String> blocchiCat = estraiOggettiBilanciati(arrayContent);
+        List<String> blocchiCat = estraiOggettiTopLevel(arrayContent);
         for (String b : blocchiCat) {
             String nome = estraiValore(b, "nome");
             String desc = estraiValore(b, "descrizione");
             if (nome != null) {
                 Categoria c = new Categoria(nome, desc != null ? desc : "");
+
                 // Campi specifici
                 String campiContent = estraiBlocco(b, "campi");
                 List<Campo> campi = estraiListaCampi(campiContent);
@@ -185,6 +223,19 @@ public class JsonUtil {
                     } catch (Exception e) {
                     }
                 }
+
+                // Sottocategorie
+                String subContent = estraiBlocco(b, "sottocategorie");
+                if (subContent != null && !subContent.trim().isEmpty()) {
+                    List<Categoria> subs = estraiAlberoCategorie(subContent);
+                    for (Categoria sub : subs) {
+                        try {
+                            c.aggiungiSottocategoria(sub);
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+
                 list.add(c);
             }
         }
@@ -196,7 +247,7 @@ public class JsonUtil {
         if (arrayContent == null)
             return list;
 
-        List<String> blocchi = estraiOggetti(arrayContent);
+        List<String> blocchi = estraiOggettiTopLevel(arrayContent);
         for (String b : blocchi) {
             String nome = estraiValore(b, "nome");
             String desc = estraiValore(b, "descrizione");
@@ -252,17 +303,17 @@ public class JsonUtil {
         return null;
     }
 
-    // Estrae oggetti semplici { ... } da una lista, assumendo no nesting complesso
-    // per i campi semplici
-    private static List<String> estraiOggetti(String arrayContent) {
+    // Versione migliorata di estraiOggetti che ignora gli oggetti annidati
+    // (top-level only)
+    private static List<String> estraiOggettiTopLevel(String content) {
         List<String> oggetti = new ArrayList<>();
-        if (arrayContent == null)
+        if (content == null)
             return oggetti;
 
         int open = 0;
         int start = -1;
-        for (int i = 0; i < arrayContent.length(); i++) {
-            char c = arrayContent.charAt(i);
+        for (int i = 0; i < content.length(); i++) {
+            char c = content.charAt(i);
             if (c == '{') {
                 if (open == 0)
                     start = i;
@@ -270,16 +321,12 @@ public class JsonUtil {
             } else if (c == '}') {
                 open--;
                 if (open == 0 && start != -1) {
-                    oggetti.add(arrayContent.substring(start + 1, i));
+                    oggetti.add(content.substring(start + 1, i));
                     start = -1;
                 }
             }
         }
         return oggetti;
-    }
-
-    private static List<String> estraiOggettiBilanciati(String content) {
-        return estraiOggetti(content); // Per ora la logica è la stessa
     }
 
     private static String estraiValore(String oggetto, String key) {

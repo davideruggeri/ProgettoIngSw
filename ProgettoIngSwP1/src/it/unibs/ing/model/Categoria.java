@@ -1,7 +1,9 @@
 package it.unibs.ing.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,6 +19,10 @@ public class Categoria implements Serializable {
     // Mappa dei campi definiti per questa categoria (NomeCampo -> OggettoCampo)
     private Map<String, Campo> campi;
 
+    // Gestione Gerarchia
+    private Categoria padre;
+    private List<Categoria> sottocategorie;
+
     /**
      * Crea una nuova Categoria.
      * 
@@ -29,6 +35,8 @@ public class Categoria implements Serializable {
         this.nome = nome;
         this.descrizione = descrizione;
         this.campi = new HashMap<>(); // Inizializza la mappa dei campi vuota
+        this.sottocategorie = new ArrayList<>();
+        this.padre = null;
     }
 
     /**
@@ -71,8 +79,71 @@ public class Categoria implements Serializable {
         return campi.get(nome);
     }
 
+    // Metodi Gerarchia
+    public Categoria getPadre() {
+        return padre;
+    }
+
+    public void setPadre(Categoria padre) {
+        this.padre = padre;
+    }
+
+    public List<Categoria> getSottocategorie() {
+        return new ArrayList<>(sottocategorie);
+    }
+
+    /**
+     * Aggiunge una sottocategoria a questa categoria.
+     * Copia automaticamente i campi della categoria padre nella sottocategoria.
+     * 
+     * @param sottocategoria La sottocategoria da aggiungere.
+     * @throws IllegalArgumentException se la sottocategoria è nulla o esiste già
+     *                                  con lo stesso nome.
+     */
+    public void aggiungiSottocategoria(Categoria sottocategoria) {
+        assert sottocategoria != null : "La sottocategoria non può essere nulla";
+
+        for (Categoria sub : sottocategorie) {
+            if (sub.getNome().equalsIgnoreCase(sottocategoria.getNome())) {
+                throw new IllegalArgumentException("Esiste già una sottocategoria con questo nome.");
+            }
+        }
+
+        // Eredita tutti i campi dal padre
+        for (Campo c : this.campi.values()) {
+            try {
+                // Creiamo una copia del campo per sicurezza, ma possiamo anche usare gli stessi
+                // riferimenti.
+                // In questo contesto, usando gli stessi riferimenti la modifica di un campo si
+                // riflette anche nei figli (se voluta).
+                // Per semplicità e sicurezza, aggiungiamo il riferimento.
+                sottocategoria.aggiungiCampo(c);
+            } catch (IllegalArgumentException e) {
+                // Ignoriamo se il campo è già presente (es. aggiunto prima)
+            }
+        }
+
+        sottocategoria.setPadre(this);
+        this.sottocategorie.add(sottocategoria);
+    }
+
+    public void rimuoviSottocategoria(Categoria sottocategoria) {
+        this.sottocategorie.remove(sottocategoria);
+        sottocategoria.setPadre(null); // Orfana
+    }
+
     @Override
     public String toString() {
-        return String.format("Categoria: %s\n%s\nCampi definiti: %d", nome, descrizione, campi.size());
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("Categoria: %s\n%s\nCampi definiti: %d\n", nome, descrizione, campi.size()));
+        if (!sottocategorie.isEmpty()) {
+            sb.append("Sottocategorie: ");
+            for (Categoria sub : sottocategorie) {
+                sb.append(sub.getNome()).append(", ");
+            }
+            sb.setLength(sb.length() - 2); // Rimuovi ultima virgola e spazio
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 }

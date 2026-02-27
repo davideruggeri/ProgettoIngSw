@@ -1,5 +1,0 @@
-{
-  "utenti": [
-    {"nomeUtente": "admin", "password": "1234", "ruolo": "CONFIGURATORE"}
-  ]
-}
