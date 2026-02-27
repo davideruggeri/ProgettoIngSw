@@ -1,0 +1,44 @@
+{
+  "categorie": [
+    {
+      "nome": "jknjifbv",
+      "descrizione": "prova",
+      "campi": [
+        {"nome": "vgs", "descrizione": "rvrevr", "obbligatorio": false, "tipo": "STRINGA"},
+        {"nome": "Data conclusiva", "descrizione": "Data di conclusione iniziativa", "obbligatorio": true, "tipo": "DATA"},
+        {"nome": "Titolo", "descrizione": "Nome di fantasia dell'iniziativa", "obbligatorio": true, "tipo": "STRINGA"},
+        {"nome": "Termine ultimo di iscrizione", "descrizione": "Ultimo giorno utile per iscriversi", "obbligatorio": true, "tipo": "DATA"},
+        {"nome": "Quota individuale", "descrizione": "Spesa prevista per partecipante", "obbligatorio": true, "tipo": "INTERO"},
+        {"nome": "Data", "descrizione": "Data di svolgimento o inizio", "obbligatorio": true, "tipo": "DATA"},
+        {"nome": "Numero di partecipanti", "descrizione": "Numero persone da coinvolgere", "obbligatorio": true, "tipo": "INTERO"},
+        {"nome": "Luogo", "descrizione": "Indirizzo o luogo di ritrovo", "obbligatorio": true, "tipo": "STRINGA"},
+        {"nome": "Ora", "descrizione": "Ora di ritrovo", "obbligatorio": true, "tipo": "ORA"}
+      ]
+    },
+    {
+      "nome": "Partita",
+      "descrizione": "prima partita",
+      "campi": [
+        {"nome": "Data conclusiva", "descrizione": "Data di conclusione iniziativa", "obbligatorio": true, "tipo": "DATA"},
+        {"nome": "Titolo", "descrizione": "Nome di fantasia dell'iniziativa", "obbligatorio": true, "tipo": "STRINGA"},
+        {"nome": "Termine ultimo di iscrizione", "descrizione": "Ultimo giorno utile per iscriversi", "obbligatorio": true, "tipo": "DATA"},
+        {"nome": "Quota individuale", "descrizione": "Spesa prevista per partecipante", "obbligatorio": true, "tipo": "INTERO"},
+        {"nome": "Data", "descrizione": "Data di svolgimento o inizio", "obbligatorio": true, "tipo": "DATA"},
+        {"nome": "Numero di partecipanti", "descrizione": "Numero persone da coinvolgere", "obbligatorio": true, "tipo": "INTERO"},
+        {"nome": "Luogo", "descrizione": "Indirizzo o luogo di ritrovo", "obbligatorio": true, "tipo": "STRINGA"},
+        {"nome": "Ora", "descrizione": "Ora di ritrovo", "obbligatorio": true, "tipo": "ORA"}
+      ]
+    }
+  ],
+  "campiBase": [
+    {"nome": "Titolo", "descrizione": "Nome di fantasia dell'iniziativa", "obbligatorio": true, "tipo": "STRINGA"},
+    {"nome": "Numero di partecipanti", "descrizione": "Numero persone da coinvolgere", "obbligatorio": true, "tipo": "INTERO"},
+    {"nome": "Termine ultimo di iscrizione", "descrizione": "Ultimo giorno utile per iscriversi", "obbligatorio": true, "tipo": "DATA"},
+    {"nome": "Luogo", "descrizione": "Indirizzo o luogo di ritrovo", "obbligatorio": true, "tipo": "STRINGA"},
+    {"nome": "Data", "descrizione": "Data di svolgimento o inizio", "obbligatorio": true, "tipo": "DATA"},
+    {"nome": "Ora", "descrizione": "Ora di ritrovo", "obbligatorio": true, "tipo": "ORA"},
+    {"nome": "Quota individuale", "descrizione": "Spesa prevista per partecipante", "obbligatorio": true, "tipo": "INTERO"},
+    {"nome": "Data conclusiva", "descrizione": "Data di conclusione iniziativa", "obbligatorio": true, "tipo": "DATA"}
+  ],
+  "campiComuni": []
+}
