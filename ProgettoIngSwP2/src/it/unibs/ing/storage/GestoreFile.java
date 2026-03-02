@@ -3,6 +3,7 @@ package it.unibs.ing.storage;
 import java.io.*;
 
 import it.unibs.ing.controller.GestoreCategorie;
+import it.unibs.ing.model.Proposta;
 import java.util.List;
 import it.unibs.ing.model.Utente;
 
@@ -54,5 +55,18 @@ public class GestoreFile {
             }
         }
         return sb.toString();
+    }
+
+    public static void salvaProposte(List<Proposta> proposte, String nomeFile) throws IOException {
+        assicuraDirectory(nomeFile);
+        String json = JsonUtil.scriviProposte(proposte);
+        try (PrintWriter out = new PrintWriter(new FileWriter(nomeFile))) {
+            out.write(json);
+        }
+    }
+
+    public static List<Proposta> caricaProposte(String nomeFile, GestoreCategorie gestore) throws IOException {
+        String json = leggiFile(nomeFile);
+        return JsonUtil.leggiProposte(json, gestore);
     }
 }

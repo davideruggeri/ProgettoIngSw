@@ -4,12 +4,16 @@ import it.unibs.ing.model.Campo;
 import it.unibs.ing.model.Categoria;
 import it.unibs.ing.model.Configuratore;
 import it.unibs.ing.model.Fruitore;
+import it.unibs.ing.model.Proposta;
+import it.unibs.ing.model.StatoProposta;
 import it.unibs.ing.model.TipoCampo;
 import it.unibs.ing.model.Utente;
 import it.unibs.ing.controller.GestoreCategorie;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Classe di utilità per convertire gli oggetti del dominio in formato JSON e
@@ -363,5 +367,130 @@ public class JsonUtil {
             }
             return oggetto.substring(startVal, endVal).trim();
         }
+    }
+
+    // -----------------------------------------------
+    // --- PROPOSTE ---
+    // -----------------------------------------------
+
+    /**
+     * Serializza la lista di proposte aperte in formato JSON.
+     * Ogni proposta tiene il nome della categoria e i valori dei campi.
+     *
+     * @param proposte Lista di proposte da serializzare.
+     * @return Stringa JSON.
+     */
+    public static String scriviProposte(List<Proposta> proposte) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\n");
+        sb.append("  \"proposte\": [\n");
+        for (int i = 0; i < proposte.size(); i++) {
+            Proposta p = proposte.get(i);
+            sb.append("    {\n");
+            sb.append("      \"categoria\": \"").append(escape(p.getCategoria().getNome())).append("\",\n");
+            sb.append("      \"stato\": \"").append(p.getStato().name()).append("\",\n");
+            sb.append("      \"campi\": {\n");
+            Map<String, String> valori = p.getValoriCampi();
+            List<String> keys = new ArrayList<>(valori.keySet());
+            for (int j = 0; j < keys.size(); j++) {
+                String k = keys.get(j);
+                sb.append("        \"").append(escape(k)).append("\": \"").append(escape(valori.get(k))).append("\"");
+                if (j < keys.size() - 1)
+                    sb.append(",");
+                sb.append("\n");
+            }
+            sb.append("      }\n");
+            sb.append("    }");
+            if (i < proposte.size() - 1)
+                sb.append(",");
+            sb.append("\n");
+        }
+        sb.append("  ]\n");
+        sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Deserializza le proposte dal JSON, ricollegando ogni proposta alla sua
+     * Categoria tramite il GestoreCategorie.
+     *
+     * @param json    Contenuto del file proposte.json.
+     * @param gestore GestoreCategorie già inizializzato, per risolvere la
+     *                categoria.
+     * @return Lista di proposte ricostruite (solo quelle con categoria trovata).
+     */
+    public static List<Proposta> leggiProposte(String json, GestoreCategorie gestore) {
+        List<Proposta> risultato = new ArrayList<>();
+        String arrayContent = estraiBlocco(json, "proposte");
+        if (arrayContent == null)
+            return risultato;
+
+        List<String> blocchi = estraiOggettiTopLevel(arrayContent);
+        for (String blocco : blocchi) {
+            String nomeCategoria = estraiValore(blocco, "categoria");
+            String statoStr = estraiValore(blocco, "stato");
+
+            if (nomeCategoria == null || statoStr == null)
+                continue;
+            Categoria categoria = gestore.getCategoria(nomeCategoria);
+            if (categoria == null)
+                continue;
+
+            Proposta p = new Proposta(categoria);
+            try {
+                p.setStato(StatoProposta.valueOf(statoStr));
+            } catch (IllegalArgumentException e) {
+                continue; // stato sconosciuto, scarto
+            }
+
+            // Leggo la mappa campi (oggetto JSON)
+            String campiContent = estraiBlocco(blocco, "campi");
+            if (campiContent != null) {
+                Map<String, String> valori = estraiMappaStringhe(campiContent);
+                for (Map.Entry<String, String> entry : valori.entrySet()) {
+                    p.impostaValore(entry.getKey(), entry.getValue());
+                }
+            }
+            risultato.add(p);
+        }
+        return risultato;
+    }
+
+    /**
+     * Estrae una mappa chiave-valore da un oggetto JSON semplice (valori solo
+     * stringa).
+     */
+    private static Map<String, String> estraiMappaStringhe(String oggetto) {
+        Map<String, String> mappa = new HashMap<>();
+        // Iteriamo cercando pattern "chiave": "valore"
+        int pos = 0;
+        while (pos < oggetto.length()) {
+            int startKey = oggetto.indexOf('"', pos);
+            if (startKey == -1)
+                break;
+            int endKey = oggetto.indexOf('"', startKey + 1);
+            if (endKey == -1)
+                break;
+            String chiave = oggetto.substring(startKey + 1, endKey);
+
+            int colon = oggetto.indexOf(':', endKey);
+            if (colon == -1)
+                break;
+            // Cerca il valore stringa
+            int startVal = oggetto.indexOf('"', colon);
+            if (startVal == -1)
+                break;
+            int endVal = oggetto.indexOf('"', startVal + 1);
+            // gestisci escape
+            while (endVal > 0 && oggetto.charAt(endVal - 1) == '\\') {
+                endVal = oggetto.indexOf('"', endVal + 1);
+            }
+            if (endVal == -1)
+                break;
+            String valore = oggetto.substring(startVal + 1, endVal);
+            mappa.put(chiave, valore);
+            pos = endVal + 1;
+        }
+        return mappa;
     }
 }

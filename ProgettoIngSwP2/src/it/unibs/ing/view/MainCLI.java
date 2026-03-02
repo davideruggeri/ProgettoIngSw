@@ -1,13 +1,18 @@
 package it.unibs.ing.view;
 
 import it.unibs.ing.controller.GestoreCategorie;
+import it.unibs.ing.controller.GestoreProposte;
 import it.unibs.ing.controller.GestoreSessione;
+import it.unibs.ing.model.Bacheca;
 import it.unibs.ing.model.Categoria;
 import it.unibs.ing.model.Campo;
+import it.unibs.ing.model.Proposta;
 import it.unibs.ing.model.TipoCampo;
 import it.unibs.ing.storage.GestoreFile;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Classe principale del programma.
@@ -18,13 +23,16 @@ public class MainCLI {
 
     private static final String FILE_DATI = "data/categorie.json";
     private static final String FILE_UTENTI = "data/utenti.json";
+    private static final String FILE_PROPOSTE = "data/proposte.json";
 
     private GestoreCategorie gestoreCategorie;
     private GestoreSessione gestoreSessione;
+    private GestoreProposte gestoreProposte;
     private InterfacciaConsole vista;
 
     public MainCLI() {
         this.vista = new InterfacciaConsole();
+        this.gestoreProposte = new GestoreProposte();
         caricaDati();
     }
 
@@ -48,6 +56,19 @@ public class MainCLI {
         } catch (Exception e) {
             vista.stampaMessaggio("Nessun dato utenti trovato. Inizializzazione utenti default.");
             this.gestoreSessione = new GestoreSessione();
+        }
+
+        try {
+            List<Proposta> proposteCaricate = GestoreFile.caricaProposte(FILE_PROPOSTE, gestoreCategorie);
+            for (Proposta p : proposteCaricate) {
+                // Le proposte caricate sono già state scartate se non erano APERTE al
+                // salvataggio.
+                // Le rimettiamo in bacheca forzatamente.
+                gestoreProposte.getBacheca().aggiungiPropostaAperta(p);
+            }
+            vista.stampaMessaggio("Proposte in bacheca caricate (" + proposteCaricate.size() + ").");
+        } catch (Exception e) {
+            vista.stampaMessaggio("Nessun dato proposte trovato. Bacheca vuota.");
         }
     }
 
@@ -122,9 +143,10 @@ public class MainCLI {
         vista.stampaMessaggio("2. Crea Nuova Categoria");
         vista.stampaMessaggio("3. Aggiungi Campo Comune");
         vista.stampaMessaggio("4. Rimuovi Categoria");
-        vista.stampaMessaggio("5. Modifica Categoria ");
-        vista.stampaMessaggio("6. Logout");
-        vista.stampaMessaggio("7. Salva & Esci");
+        vista.stampaMessaggio("5. Modifica Categoria");
+        vista.stampaMessaggio("6. Gestisci Proposte");
+        vista.stampaMessaggio("7. Logout");
+        vista.stampaMessaggio("8. Salva & Esci");
 
         int scelta = vista.leggiIntero("Seleziona un'opzione");
 
@@ -145,14 +167,162 @@ public class MainCLI {
                 modificaCategoria();
                 break;
             case 6:
-                gestoreSessione.logout();
+                menuProposte();
                 break;
             case 7:
-                return false; // Esci
+                gestoreSessione.logout();
+                break;
+            case 8:
+                return false;
             default:
                 vista.stampaMessaggio("Scelta non valida.");
         }
         return true;
+    }
+
+    // =========================================================
+    // --- GESTIONE PROPOSTE (V2) ---
+    // =========================================================
+
+    /**
+     * Sottomenu per la gestione delle proposte di iniziativa.
+     */
+    private void menuProposte() {
+        boolean continua = true;
+        while (continua) {
+            vista.stampaMessaggio("\n--- MENU PROPOSTE ---");
+            vista.stampaMessaggio("1. Crea Nuova Proposta");
+            vista.stampaMessaggio("2. Pubblica una Proposta");
+            vista.stampaMessaggio("3. Visualizza Bacheca");
+            vista.stampaMessaggio("4. Torna al menu principale");
+
+            int scelta = vista.leggiIntero("Seleziona un'opzione");
+            switch (scelta) {
+                case 1:
+                    creaProposta();
+                    break;
+                case 2:
+                    pubblicaProposta();
+                    break;
+                case 3:
+                    visualizzaBacheca();
+                    break;
+                case 4:
+                    continua = false;
+                    break;
+                default:
+                    vista.stampaMessaggio("Scelta non valida.");
+            }
+        }
+    }
+
+    /**
+     * Flusso di creazione di una nuova proposta:
+     * seleziona categoria -> compila campi -> valida.
+     */
+    private void creaProposta() {
+        if (gestoreCategorie.getCategorie().isEmpty()) {
+            vista.stampaMessaggio("Nessuna categoria disponibile. Crea prima una categoria.");
+            return;
+        }
+
+        // 1. Selezione categoria
+        vista.stampaMessaggio("\n--- CATEGORIE DISPONIBILI ---");
+        for (Categoria c : gestoreCategorie.getCategorieRadice()) {
+            stampaCategoriaRicorsiva(c, "");
+        }
+        String nomeCategoria = vista.leggiStringa("Nome della categoria per la proposta");
+        Categoria categoria = gestoreCategorie.getCategoria(nomeCategoria);
+        if (categoria == null) {
+            vista.stampaMessaggio("Categoria non trovata.");
+            return;
+        }
+
+        // 2. Compilazione campi
+        Proposta proposta = new Proposta(categoria);
+        vista.stampaMessaggio("\nCompila i campi per la categoria '" + categoria.getNome() + "':");
+        vista.stampaMessaggio("(Per i campi di tipo DATA usa il formato dd/MM/yyyy, per ORA usa HH:mm)");
+
+        for (Campo campo : categoria.getCampi().values()) {
+            String etichetta = campo.getNome()
+                    + " [" + campo.getTipo().name() + "]"
+                    + (campo.isObbligatorio() ? " *" : " (opzionale)");
+            String valore = vista.leggiStringa(etichetta);
+            if (!valore.isBlank()) {
+                proposta.impostaValore(campo.getNome(), valore);
+            }
+        }
+
+        // 3. Validazione
+        if (gestoreProposte.validaProposta(proposta)) {
+            gestoreProposte.getBacheca(); // assicura bacheca inizializzata
+            // Teniamo la proposta in una lista locale per poterla poi pubblicare
+            // La aggiungiamo alla bacheca interna del gestore come "in attesa"
+            vista.stampaMessaggio("\nProposta VALIDA! Puoi pubblicarla con l'opzione 'Pubblica una Proposta'.");
+            if (vista.leggiBooleano("Vuoi pubblicarla subito in bacheca?")) {
+                try {
+                    gestoreProposte.pubblicaProposta(proposta);
+                    vista.stampaMessaggio("Proposta pubblicata in bacheca con successo.");
+                } catch (IllegalArgumentException e) {
+                    vista.stampaMessaggio("Errore: " + e.getMessage());
+                }
+            } else {
+                vista.stampaMessaggio("Proposta salvata come VALIDA. Sarà scartata se non pubblicata prima di uscire.");
+            }
+        } else {
+            vista.stampaMessaggio("\nProposta NON valida. Controlla:");
+            vista.stampaMessaggio("  - Tutti i campi obbligatori (*) devono essere compilati.");
+            vista.stampaMessaggio("  - 'Termine ultimo di iscrizione' deve essere una data futura.");
+            vista.stampaMessaggio("  - 'Data' dell'evento deve essere almeno 2 giorni dopo il termine di iscrizione.");
+        }
+    }
+
+    /**
+     * Permette di pubblicare in bacheca una proposta già valida.
+     * In questa versione semplificata, chiede di ricreare la proposta
+     * (le proposte non ancora pubblicate non sopravvivono alla chiusura).
+     */
+    private void pubblicaProposta() {
+        Bacheca bacheca = gestoreProposte.getBacheca();
+        Map<String, List<Proposta>> tutte = bacheca.getTutteLeProposte();
+
+        // Mostra le proposte già in bacheca
+        if (tutte.isEmpty()) {
+            vista.stampaMessaggio(
+                    "Nessuna proposta in bacheca. Crea e pubblica una proposta dalla voce 'Crea Nuova Proposta'.");
+            return;
+        }
+
+        // Se ci sono già proposte aperte le mostra
+        vista.stampaMessaggio("\n--- PROPOSTE IN BACHECA ---");
+        visualizzaBacheca();
+    }
+
+    /**
+     * Mostra tutte le proposte attualmente pubblicate in bacheca.
+     */
+    private void visualizzaBacheca() {
+        Bacheca bacheca = gestoreProposte.getBacheca();
+        Map<String, List<Proposta>> tutte = bacheca.getTutteLeProposte();
+
+        if (tutte.isEmpty()) {
+            vista.stampaMessaggio("La bacheca è vuota.");
+            return;
+        }
+
+        vista.stampaMessaggio("\n========== BACHECA ==========");
+        for (Map.Entry<String, List<Proposta>> entry : tutte.entrySet()) {
+            vista.stampaMessaggio("\n[Categoria: " + entry.getKey() + "]");
+            List<Proposta> proposte = entry.getValue();
+            for (int i = 0; i < proposte.size(); i++) {
+                Proposta p = proposte.get(i);
+                vista.stampaMessaggio("  Proposta #" + (i + 1) + " - Stato: " + p.getStato());
+                for (Map.Entry<String, String> campo : p.getValoriCampi().entrySet()) {
+                    vista.stampaMessaggio("    " + campo.getKey() + ": " + campo.getValue());
+                }
+            }
+        }
+        vista.stampaMessaggio("=============================");
     }
 
     private void mostraCategorie() {
@@ -329,6 +499,14 @@ public class MainCLI {
         try {
             GestoreFile.salvaCategorie(gestoreCategorie, FILE_DATI);
             GestoreFile.salvaUtenti(gestoreSessione.getUtenti(), FILE_UTENTI);
+
+            // Per le proposte, estraiamo solo quelle attualmente in Bacheca (APERTE)
+            List<Proposta> bacheca = new java.util.ArrayList<>();
+            for (List<Proposta> lista : gestoreProposte.getBacheca().getTutteLeProposte().values()) {
+                bacheca.addAll(lista);
+            }
+            GestoreFile.salvaProposte(bacheca, FILE_PROPOSTE);
+
             vista.stampaMessaggio("Dati salvati correttamente.");
         } catch (IOException e) {
             vista.stampaMessaggio("Errore salvataggio dati: " + e.getMessage());
