@@ -1,0 +1,37 @@
+\chapter{Versione 1}
+
+\section{Obbiettivi e Requisiti}
+La prima versione dell'applicazione introduce il dominio del sistema: Categorie, Campi (Base, Comuni, Specifici) e l'attore principale, ovvero il \textbf{Configuratore}.
+
+\section{Casi d'Uso}
+
+\subsection{Elenco Casi d'Uso}
+\begin{enumerate}
+    \item \textbf{Login / Cambio Password}: Il configuratore inserisce le credenziali predefinite per accedere per la prima volta e imposta le proprie credenziali personali, oppure esegue il login con credenziali già impostate.
+    \item \textbf{Gestire Campi Base}: Al primissimo avvio, il configuratore definisce i campi obbligatori di sistema.
+    \item \textbf{Gestire Campi Comuni}: Il configuratore può aggiungere, modificare (cambiarne l'obbligatorietà) o rimuovere campi condivisi da tutte le categorie.
+    \item \textbf{Creare Categoria}: Il configuratore crea una nuova categoria, specificandone nome e descrizione, e definendone eventuali campi specifici.
+    \item \textbf{Modificare Categoria}: Il configuratore aggiunge o rimuove campi specifici a una categoria esistente.
+    \item \textbf{Rimuovere Categoria}: Il configuratore elimina una categoria e i suoi campi dal sistema.
+    \item \textbf{Visualizzare Categorie}: Il configuratore vede l'albero delle categorie e i rispettivi campi.
+\end{enumerate}
+
+\subsection{Diagramma UML dei Casi d'Uso}
+% Inserire qui l'immagine generata dal PlantUML o il file .eps/.png
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\textwidth]{images/uc_v1.png}
+    \caption{Diagramma dei Casi d'Uso - Versione 1}
+    \label{fig:uc_v1}
+\end{figure}
+
+\section{Diagramma delle Classi}
+
+Il pattern architetturale scelto separa nettamente i Dati (package \texttt{model}) dalla logica di business (package \texttt{controller}). 
+% Inserire qui l'immagine generata dal PlantUML
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=1\textwidth]{images/class_v1.png}
+    \caption{Diagramma delle Classi - Versione 1}
+    \label{fig:class_v1}
+\end{figure}

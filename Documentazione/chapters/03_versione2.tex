@@ -1,0 +1,37 @@
+\chapter{Versione 2}
+
+\section{Obbiettivi e Requisiti}
+La seconda versione dell'applicazione introduce la possibilità per il Configuratore di proporre vere e proprie iniziative basate sulle Categorie precedentemente create e di renderle pubbliche sulla nuova \textbf{Bacheca}.
+
+\section{Casi d'Uso (Aggiunte rispetto a V1)}
+
+I casi d'uso base del Configuratore restano invariati. A essi si aggiungono le seguenti funzionalità:
+
+\begin{enumerate}
+    \setcounter{enumi}{7}
+    \item \textbf{Creare Proposta}: Il configuratore seleziona una categoria e compila un modulo per proporre un nuovo evento. Il sistema verifica la congruenza logica delle date e la compilazione dei campi obbligatori, assegnando lo stato \texttt{VALIDA}.
+    \item \textbf{Pubblicare Proposta in Bacheca}: Il configuratore sceglie di rendere pubblica una proposta valida, facendola passare allo stato \texttt{APERTA} nella bacheca di sistema.
+    \item \textbf{Visualizzare Bacheca}: Il configuratore può vedere tutte le proposte attualmente aperte, raggruppate per categoria d'appartenenza.
+\end{enumerate}
+
+\subsection{Diagramma UML dei Casi d'Uso (V2)}
+% Inserire qui l'immagine generata dal PlantUML
+Le aggiunte specifiche di questa versione (Creazione Proposta, Pubblicazione, e Visualizzazione Bacheca) sono state evidenziate rispetto al diagramma V1.
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\textwidth]{images/uc_v2.png}
+    \caption{Diagramma dei Casi d'Uso - Versione 2}
+    \label{fig:uc_v2}
+\end{figure}
+
+\section{Diagramma delle Classi (Aggiunte rispetto a V1)}
+
+Sono state introdotte le nuove entità \texttt{Proposta}, \texttt{StatoProposta} e la \texttt{Bacheca}, oltre al controller dedicato \texttt{GestoreProposte}.
+% Inserire qui l'immagine generata dal PlantUML
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=1\textwidth]{images/class_v2.png}
+    \caption{Diagramma delle Classi (Delta evidenziati) - Versione 2}
+    \label{fig:class_v2}
+\end{figure}
