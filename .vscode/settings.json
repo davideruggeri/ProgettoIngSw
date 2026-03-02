@@ -1,0 +1,7 @@
+{
+    "java.project.sourcePaths": [
+        "ProgettoIngSwP1/src",
+        "ProgettoIngSwP2/src"
+    ],
+    "java.project.outputPath": "ProgettoIngSwP2/bin"
+}
