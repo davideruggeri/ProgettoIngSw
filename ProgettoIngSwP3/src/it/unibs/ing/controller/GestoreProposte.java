@@ -2,6 +2,13 @@ package it.unibs.ing.controller;
 
 import it.unibs.ing.model.Bacheca;
 import it.unibs.ing.model.Proposta;
+import it.unibs.ing.model.StatoProposta;
+import it.unibs.ing.model.Utente;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.List;
 
 /**
  * Controller per la gestione logica delle proposte di iniziativa
@@ -43,6 +50,67 @@ public class GestoreProposte {
             bacheca.aggiungiPropostaAperta(proposta);
         } catch (Exception e) {
             throw new IllegalArgumentException("Errore durante la pubblicazione: " + e.getMessage());
+        }
+    }
+
+    private void collegaObservers(Proposta p, GestoreSessione sessione) {
+        for (String username : p.getIscritti()) {
+            Utente u = sessione.getUtente(username);
+            if (u instanceof it.unibs.ing.model.Observer) {
+                p.addObserver((it.unibs.ing.model.Observer) u);
+            }
+        }
+    }
+
+    /**
+     * Algoritmo schedulato (invocato al login) che verifica tutte le proposte.
+     * Cambia lo stato a CONFERMATA/ANNULLATA se scade il termine di iscrizione.
+     * Cambia lo stato a CONCLUSA se è passata la data conclusiva di un evento
+     * confermato.
+     * Invia le notifiche nell'area personale dei Fruitori.
+     */
+    public void controllaScadenze(GestoreSessione sessione) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate oggi = LocalDate.now();
+
+        // Iteriamo su tutte le proposte per aggiornare gli stati
+        for (List<Proposta> lista : bacheca.getTutteLeProposte().values()) {
+            for (Proposta p : lista) {
+                try {
+                    if (p.getStato() == StatoProposta.APERTA) {
+                        String scadenzaStr = p.getValore("Termine ultimo di iscrizione");
+                        if (scadenzaStr != null) {
+                            LocalDate scadenza = LocalDate.parse(scadenzaStr, formatter);
+                            if (oggi.isAfter(scadenza)) {
+                                int target = 0;
+                                try {
+                                    target = Integer.parseInt(p.getValore("Numero di partecipanti"));
+                                } catch (Exception ignored) {
+                                }
+
+                                collegaObservers(p, sessione);
+
+                                if (p.getIscritti().size() >= target) {
+                                    p.setStato(StatoProposta.CONFERMATA);
+                                } else {
+                                    p.setStato(StatoProposta.ANNULLATA);
+                                }
+                            }
+                        }
+                    } else if (p.getStato() == StatoProposta.CONFERMATA) {
+                        String dataFinStr = p.getValore("Data conclusiva");
+                        if (dataFinStr != null) {
+                            LocalDate dataFin = LocalDate.parse(dataFinStr, formatter);
+                            if (oggi.isAfter(dataFin)) {
+                                collegaObservers(p, sessione);
+                                p.setStato(StatoProposta.CONCLUSA);
+                            }
+                        }
+                    }
+                } catch (DateTimeParseException ignored) {
+                    // Dati incorretti salvati precedentemente
+                }
+            }
         }
     }
 }

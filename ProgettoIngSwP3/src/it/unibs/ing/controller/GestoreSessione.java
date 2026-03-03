@@ -54,6 +54,15 @@ public class GestoreSessione implements Serializable {
         return new ArrayList<>(utenti);
     }
 
+    public Utente getUtente(String nomeUtente) {
+        for (Utente u : utenti) {
+            if (u.getNomeUtente().equals(nomeUtente)) {
+                return u;
+            }
+        }
+        return null;
+    }
+
     public void setUtenti(List<Utente> utenti) {
         this.utenti = new ArrayList<>(utenti);
         // Garantisce che ci sia sempre almeno un configuratore di default
@@ -70,5 +79,14 @@ public class GestoreSessione implements Serializable {
      */
     public boolean isConfiguratore() {
         return utenteCorrente instanceof Configuratore;
+    }
+
+    /**
+     * Verifica se l'utente corrente è un Fruitore.
+     * 
+     * @return true se l'utente è un Fruitore, false altrimenti.
+     */
+    public boolean isFruitore() {
+        return utenteCorrente instanceof it.unibs.ing.model.Fruitore;
     }
 }

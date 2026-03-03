@@ -15,5 +15,20 @@ public enum StatoProposta {
      * La proposta valida è stata pubblicata nella bacheca ed è pronta per
      * raccogliere iscrizioni.
      */
-    APERTA
+    APERTA,
+
+    /**
+     * La proposta ha raggiunto il target di iscritti entro il termine utile.
+     */
+    CONFERMATA,
+
+    /**
+     * La proposta non ha raggiunto il target di iscritti ed è scaduta.
+     */
+    ANNULLATA,
+
+    /**
+     * La proposta confermata si è conclusa e il giorno finale è passato.
+     */
+    CONCLUSA
 }

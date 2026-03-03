@@ -8,6 +8,8 @@ import it.unibs.ing.model.Categoria;
 import it.unibs.ing.model.Campo;
 import it.unibs.ing.model.Proposta;
 import it.unibs.ing.model.TipoCampo;
+import it.unibs.ing.model.Fruitore;
+import it.unibs.ing.model.Utente;
 import it.unibs.ing.storage.GestoreFile;
 
 import java.io.IOException;
@@ -83,11 +85,12 @@ public class MainCLI {
             if (gestoreSessione.getUtenteCorrente() == null) {
                 loopLogin();
             } else {
+                gestoreProposte.controllaScadenze(gestoreSessione);
+
                 if (gestoreSessione.isConfiguratore()) {
                     inEsecuzione = menuConfiguratore();
                 } else {
-                    // Logica per altri utenti (future versioni)
-                    gestoreSessione.logout();
+                    inEsecuzione = menuFruitore();
                 }
             }
         }
@@ -127,7 +130,15 @@ public class MainCLI {
                 }
             }
         } else {
-            vista.stampaMessaggio("Credenziali non valide.");
+            vista.stampaMessaggio("Credenziali non valide o utente inesistente.");
+            if (vista.leggiBooleano("Vuoi registrarti come nuovo Fruitore con questo nome utente?")) {
+                String nuovaPass = vista.leggiStringa("Inserisci una password per il tuo account");
+                Fruitore nuovoFruitore = new Fruitore(nomeUtente, nuovaPass);
+                List<Utente> listaUtenti = gestoreSessione.getUtenti();
+                listaUtenti.add(nuovoFruitore);
+                gestoreSessione.setUtenti(listaUtenti);
+                vista.stampaMessaggio("Registrazione completata! Ora puoi effettuare il login.");
+            }
         }
     }
 
@@ -178,6 +189,140 @@ public class MainCLI {
                 vista.stampaMessaggio("Scelta non valida.");
         }
         return true;
+    }
+
+    // =========================================================
+    // --- MENU FRUITORE (V3) ---
+    // =========================================================
+
+    private boolean menuFruitore() {
+        vista.stampaMessaggio("\n--- MENU FRUITORE ---");
+        vista.stampaMessaggio("1. Visualizza Bacheca");
+        vista.stampaMessaggio("2. Iscriviti a una Proposta");
+        vista.stampaMessaggio("3. Ritira l'iscrizione da una Proposta");
+        vista.stampaMessaggio("4. Area Personale (Notifiche)");
+        vista.stampaMessaggio("5. Logout");
+        vista.stampaMessaggio("6. Salva & Esci");
+
+        int scelta = vista.leggiIntero("Seleziona un'opzione");
+
+        switch (scelta) {
+            case 1:
+                visualizzaBacheca();
+                break;
+            case 2:
+                iscrivitiProposta();
+                break;
+            case 3:
+                ritiraIscrizione();
+                break;
+            case 4:
+                gestisciNotifiche();
+                break;
+            case 5:
+                gestoreSessione.logout();
+                break;
+            case 6:
+                return false;
+            default:
+                vista.stampaMessaggio("Scelta non valida.");
+        }
+        return true;
+    }
+
+    private void ritiraIscrizione() {
+        Fruitore f = (Fruitore) gestoreSessione.getUtenteCorrente();
+        String mioUsername = f.getNomeUtente();
+
+        List<Proposta> mieIscrizioni = new java.util.ArrayList<>();
+        for (List<Proposta> lista : gestoreProposte.getBacheca().getTutteLeProposte().values()) {
+            for (Proposta p : lista) {
+                if (p.getStato() == it.unibs.ing.model.StatoProposta.APERTA && p.getIscritti().contains(mioUsername)) {
+                    mieIscrizioni.add(p);
+                }
+            }
+        }
+
+        if (mieIscrizioni.isEmpty()) {
+            vista.stampaMessaggio("Non sei iscritto ad alcuna proposta in bacheca.");
+            return;
+        }
+
+        vista.stampaMessaggio("\nLe tue iscrizioni attuali (Proposte Aperte):");
+        for (int i = 0; i < mieIscrizioni.size(); i++) {
+            Proposta p = mieIscrizioni.get(i);
+            vista.stampaMessaggio((i + 1) + ". " + p.getValore("Titolo") + " [" + p.getCategoria().getNome() + "]");
+        }
+
+        int idx = vista.leggiIntero("Seleziona il numero della proposta da cui ritirarti") - 1;
+        if (idx >= 0 && idx < mieIscrizioni.size()) {
+            Proposta p = mieIscrizioni.get(idx);
+            if (p.rimuoviIscritto(mioUsername)) {
+                p.removeObserver(f);
+                vista.stampaMessaggio("Iscrizione ritirata con successo.");
+            } else {
+                vista.stampaMessaggio("Errore nel ritiro dell'iscrizione.");
+            }
+        } else {
+            vista.stampaMessaggio("Selezione non valida.");
+        }
+    }
+
+    private void iscrivitiProposta() {
+        String nomeCat = vista.leggiStringa("Inserisci la Categoria dell'evento a cui vuoi iscriverti");
+        List<Proposta> aperte = gestoreProposte.getBacheca().getProposteApertePerCategoria(nomeCat);
+        if (aperte.isEmpty()) {
+            vista.stampaMessaggio("Nessuna proposta aperta per questa categoria.");
+            return;
+        }
+
+        vista.stampaMessaggio("\nProposte disponibili in " + nomeCat + ":");
+        for (int i = 0; i < aperte.size(); i++) {
+            Proposta p = aperte.get(i);
+            vista.stampaMessaggio((i + 1) + ". " + p.getValore("Titolo") + " (Iscritti: " + p.getIscritti().size() + "/"
+                    + p.getValore("Numero di partecipanti") + ")");
+        }
+
+        int idx = vista.leggiIntero("Seleziona il numero della proposta") - 1;
+        if (idx >= 0 && idx < aperte.size()) {
+            Proposta p = aperte.get(idx);
+            String mioUsername = gestoreSessione.getUtenteCorrente().getNomeUtente();
+            if (p.getIscritti().contains(mioUsername)) {
+                vista.stampaMessaggio("Sei già iscritto a questa proposta.");
+            } else {
+                if (p.aggiungiIscritto(mioUsername)) {
+                    p.addObserver((Fruitore) gestoreSessione.getUtenteCorrente());
+                    vista.stampaMessaggio("Iscrizione effettuata con successo!");
+                } else {
+                    vista.stampaMessaggio("Iscrizione fallita. Posti esauriti.");
+                }
+            }
+        } else {
+            vista.stampaMessaggio("Selezione non valida.");
+        }
+    }
+
+    private void gestisciNotifiche() {
+        Fruitore f = (Fruitore) gestoreSessione.getUtenteCorrente();
+        List<String> notifiche = f.getNotifiche();
+        if (notifiche.isEmpty()) {
+            vista.stampaMessaggio("Non hai nuove notifiche nel tuo spazio personale.");
+            return;
+        }
+
+        vista.stampaMessaggio("\n--- LE TUE NOTIFICHE ---");
+        for (int i = 0; i < notifiche.size(); i++) {
+            vista.stampaMessaggio((i + 1) + ". " + notifiche.get(i));
+        }
+
+        if (vista.leggiBooleano("Vuoi cancellare una notifica?")) {
+            int idx = vista.leggiIntero("Numero notifica da cancellare") - 1;
+            if (f.rimuoviNotifica(idx)) {
+                vista.stampaMessaggio("Notifica eliminata dal tuo spazio personale.");
+            } else {
+                vista.stampaMessaggio("Numero non valido.");
+            }
+        }
     }
 
     // =========================================================

@@ -118,6 +118,16 @@ public class JsonUtil {
             sb.append("\"nomeUtente\": \"").append(escape(u.getNomeUtente())).append("\", ");
             sb.append("\"password\": \"").append(escape(u.getPassword())).append("\", ");
             sb.append("\"ruolo\": \"").append(u instanceof Configuratore ? "CONFIGURATORE" : "FRUITORE").append("\"");
+            if (u instanceof Fruitore) {
+                Fruitore f = (Fruitore) u;
+                sb.append(", \"notifiche\": [");
+                for (int j = 0; j < f.getNotifiche().size(); j++) {
+                    sb.append("\"").append(escape(f.getNotifiche().get(j))).append("\"");
+                    if (j < f.getNotifiche().size() - 1)
+                        sb.append(", ");
+                }
+                sb.append("]");
+            }
             sb.append("}");
             if (i < utenti.size() - 1)
                 sb.append(",\n");
@@ -186,7 +196,14 @@ public class JsonUtil {
                 if ("CONFIGURATORE".equals(ruolo)) {
                     utenti.add(new Configuratore(nome, pass));
                 } else {
-                    utenti.add(new Fruitore(nome, pass));
+                    Fruitore f = new Fruitore(nome, pass);
+                    String notificheBlocco = estraiBlocco(blocco, "notifiche");
+                    if (notificheBlocco != null) {
+                        for (String n : estraiArrayStringhe(notificheBlocco)) {
+                            f.aggiungiNotifica(n);
+                        }
+                    }
+                    utenti.add(f);
                 }
             }
         }
@@ -353,12 +370,22 @@ public class JsonUtil {
         char firstChar = oggetto.charAt(startVal);
         if (firstChar == '\"') {
             // Stringa
-            int endVal = oggetto.indexOf("\"", startVal + 1);
-            // Gestione escape semplice
-            while (endVal > 0 && oggetto.charAt(endVal - 1) == '\\') {
-                endVal = oggetto.indexOf("\"", endVal + 1);
+            int endVal = startVal + 1;
+            while (endVal < oggetto.length()) {
+                endVal = oggetto.indexOf('\"', endVal);
+                if (endVal == -1)
+                    break;
+                // Gestione escape semplice
+                if (endVal > 0 && oggetto.charAt(endVal - 1) == '\\') {
+                    endVal++; // Prosegue dopo l'escape
+                } else {
+                    break;
+                }
             }
-            return oggetto.substring(startVal + 1, endVal);
+            if (endVal == -1)
+                return null;
+            return oggetto.substring(startVal + 1, endVal).replace("\\\"", "\"").replace("\\n", "\n").replace("\\\\",
+                    "\\");
         } else {
             // Booleano o numero (fino a virgola o fine)
             int endVal = startVal;
@@ -367,6 +394,40 @@ public class JsonUtil {
             }
             return oggetto.substring(startVal, endVal).trim();
         }
+    }
+
+    private static List<String> estraiArrayStringhe(String arrayContent) {
+        List<String> list = new ArrayList<>();
+        if (arrayContent == null || arrayContent.trim().isEmpty())
+            return list;
+
+        int pos = 0;
+        while (pos < arrayContent.length()) {
+            int startStr = arrayContent.indexOf('"', pos);
+            if (startStr == -1)
+                break;
+
+            int endStr = startStr + 1;
+            while (endStr < arrayContent.length()) {
+                endStr = arrayContent.indexOf('"', endStr);
+                if (endStr == -1)
+                    break;
+                if (arrayContent.charAt(endStr - 1) == '\\') {
+                    endStr++;
+                } else {
+                    break;
+                }
+            }
+            if (endStr != -1) {
+                String str = arrayContent.substring(startStr + 1, endStr).replace("\\\"", "\"").replace("\\n", "\n")
+                        .replace("\\\\", "\\");
+                list.add(str);
+                pos = endStr + 1;
+            } else {
+                break;
+            }
+        }
+        return list;
     }
 
     // -----------------------------------------------
@@ -399,7 +460,17 @@ public class JsonUtil {
                     sb.append(",");
                 sb.append("\n");
             }
-            sb.append("      }\n");
+            sb.append("      },\n");
+
+            // iscritti
+            sb.append("      \"iscritti\": [");
+            for (int k = 0; k < p.getIscritti().size(); k++) {
+                sb.append("\"").append(escape(p.getIscritti().get(k))).append("\"");
+                if (k < p.getIscritti().size() - 1)
+                    sb.append(", ");
+            }
+            sb.append("]\n");
+
             sb.append("    }");
             if (i < proposte.size() - 1)
                 sb.append(",");
@@ -451,6 +522,15 @@ public class JsonUtil {
                     p.impostaValore(entry.getKey(), entry.getValue());
                 }
             }
+
+            // Leggo gli iscritti
+            String iscrittiContent = estraiBlocco(blocco, "iscritti");
+            if (iscrittiContent != null) {
+                for (String iscr : estraiArrayStringhe(iscrittiContent)) {
+                    p.aggiungiIscritto(iscr);
+                }
+            }
+
             risultato.add(p);
         }
         return risultato;

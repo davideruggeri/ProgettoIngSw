@@ -20,23 +20,42 @@ public class Bacheca {
     }
 
     /**
-     * Aggiunge una proposta alla bacheca, ma solo se è aperta.
+     * Aggiunge una proposta all'archivio generale.
+     */
+    public void aggiungiProposta(Proposta p) {
+        String nomeCat = p.getCategoria().getNome();
+        propostePerCategoria.putIfAbsent(nomeCat, new ArrayList<>());
+        propostePerCategoria.get(nomeCat).add(p);
+    }
+
+    /**
+     * Deprecato / di transizione per retrocompatibilità con V2.
      */
     public void aggiungiPropostaAperta(Proposta p) {
-        if (p.getStato() == StatoProposta.APERTA) {
-            String nomeCat = p.getCategoria().getNome();
-            propostePerCategoria.putIfAbsent(nomeCat, new ArrayList<>());
-            propostePerCategoria.get(nomeCat).add(p);
+        if (p.getStato() == StatoProposta.APERTA || p.getStato() == StatoProposta.VALIDA) {
+            if (p.getStato() == StatoProposta.VALIDA) {
+                p.setStato(StatoProposta.APERTA);
+            }
+            aggiungiProposta(p);
         } else {
-            throw new IllegalArgumentException("Si possono aggiungere in bacheca solo proposte in stato APERTA.");
+            // In V3 permettiamo il caricamento di tutte per l'archivio.
+            aggiungiProposta(p);
         }
     }
 
     /**
-     * Ritorna tutte le proposte attualmente in bacheca per una data categoria.
+     * Ritorna tutte le proposte attualmente in bacheca (APERTE) per una data
+     * categoria.
      */
     public List<Proposta> getProposteApertePerCategoria(String nomeCategoria) {
-        return propostePerCategoria.getOrDefault(nomeCategoria, new ArrayList<>());
+        List<Proposta> aperte = new ArrayList<>();
+        List<Proposta> tutte = propostePerCategoria.getOrDefault(nomeCategoria, new ArrayList<>());
+        for (Proposta p : tutte) {
+            if (p.getStato() == StatoProposta.APERTA) {
+                aperte.add(p);
+            }
+        }
+        return aperte;
     }
 
     public Map<String, List<Proposta>> getTutteLeProposte() {

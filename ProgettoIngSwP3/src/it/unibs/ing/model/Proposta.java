@@ -3,21 +3,27 @@ package it.unibs.ing.model;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Rappresenta un'iniziativa proposta da un Configuratore.
  */
-public class Proposta {
+public class Proposta implements Observable {
     private Categoria categoria;
     private Map<String, String> valoriCampi;
     private StatoProposta stato;
+    private List<String> iscritti;
+    private transient List<Observer> observers;
 
     public Proposta(Categoria categoria) {
         this.categoria = categoria;
         this.valoriCampi = new HashMap<>();
         this.stato = null; // Stato iniziale nullo finché non validata o impostata diversamente
+        this.iscritti = new ArrayList<>();
+        this.observers = new ArrayList<>();
     }
 
     public Categoria getCategoria() {
@@ -44,8 +50,69 @@ public class Proposta {
         return stato;
     }
 
-    public void setStato(StatoProposta stato) {
-        this.stato = stato;
+    public void setStato(StatoProposta nuovoStato) {
+        if (this.stato != nuovoStato) {
+            this.stato = nuovoStato;
+            if (nuovoStato != null) {
+                notifyObservers("La proposta '" + categoria.getNome() + "' ha cambiato stato in: " + nuovoStato);
+            }
+        }
+    }
+
+    public List<String> getIscritti() {
+        return iscritti;
+    }
+
+    private void initObservers() {
+        if (observers == null) {
+            observers = new ArrayList<>();
+        }
+    }
+
+    @Override
+    public void addObserver(Observer o) {
+        initObservers();
+        if (!observers.contains(o)) {
+            observers.add(o);
+        }
+    }
+
+    @Override
+    public void removeObserver(Observer o) {
+        initObservers();
+        observers.remove(o);
+    }
+
+    @Override
+    public void notifyObservers(String messaggio) {
+        initObservers();
+        for (Observer o : observers) {
+            o.update(messaggio);
+        }
+    }
+
+    /**
+     * @return true se c'è ancora posto, false se i posti sono esauriti.
+     */
+    public boolean puoIscrivere() {
+        try {
+            int maxPartecipanti = Integer.parseInt(getValore("Numero di partecipanti"));
+            return iscritti.size() < maxPartecipanti;
+        } catch (NumberFormatException | NullPointerException e) {
+            return false;
+        }
+    }
+
+    public boolean aggiungiIscritto(String usernameFruitore) {
+        if (!iscritti.contains(usernameFruitore) && puoIscrivere()) {
+            iscritti.add(usernameFruitore);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean rimuoviIscritto(String usernameFruitore) {
+        return iscritti.remove(usernameFruitore);
     }
 
     /**
