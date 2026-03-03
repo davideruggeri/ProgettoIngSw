@@ -7,9 +7,20 @@ Viene inoltre sviluppata la logica per la gestione degli stati dinamici delle pr
 
 \section{Casi d'Uso (Aggiunte rispetto a V2)}
 % Inserire qui i nuovi casi d'uso (login fruitore, iscrizione evento, visualizzazione notifiche ecc.)
+\begin{enumerate}
+    \item \textbf{Registrazione e Login Fruitore}: Permette al fruitore di accedere e gestire la sua area personale.
+    \item \textbf{Visualizzazione Bacheca}: Il fruitore vede tutte le proposte in stato \texttt{APERTA}.
+    \item \textbf{Iscrizione e Ritiro}: Il fruitore decide se partecipare ad una particolare iniziativa e disdirla se è ancora disponibile.
+    \item \textbf{Gestione Notifiche}: Area in cui compaiono i messaggi automatici dei cambi di stato degli eventi a cui si è holds prenotati.
+\end{enumerate}
 
 \subsection{Diagramma UML dei Casi d'Uso (V3)}
-% Inserire qui l'immagine generata dal PlantUML
+
+Il file sorgente PlantUML del nuovo sistema per i fruitori è \texttt{v3\_casi\_uso.puml}.
 
 \section{Diagramma delle Classi (Aggiunte rispetto a V2)}
 % Inserire qui l'immagine generata dal PlantUML relativa al pattern per Fruitore, Iscrizione, e Notifiche (Observer).
+
+Il file sorgente PlantUML del pattern Observer per Fruitore e Proposta è \texttt{v3\_diagramma\_classi.puml}.
+
+L'interazione principale vede \texttt{Proposta} agire da \textit{Observable} (soggetto) e \texttt{Fruitore} da \textit{Observer}. Quando la Bancha elabora la scadenza e invoca \texttt{setStato()} sulla Proposta, quest'ultima notifica in automatico tutti i Fruitori iscritti attraverso il metodo \texttt{update()}.

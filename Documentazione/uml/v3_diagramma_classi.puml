@@ -1,0 +1,70 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+interface Observer {
+  +update(messaggio: String)
+}
+
+interface Observable {
+  +addObserver(o: Observer)
+  +removeObserver(o: Observer)
+  +notifyObservers(messaggio: String)
+}
+
+abstract class Utente {
+  -nomeUtente: String
+  -password: String
+  +controllaPassword(pwd: String): boolean
+}
+
+class Fruitore extends Utente implements Observer {
+  -notifiche: List<String>
+  +aggiungiNotifica(messaggio: String)
+  +rimuoviNotifica(indice: int): boolean
+  +update(messaggio: String)
+}
+
+class Proposta implements Observable {
+  -categoria: Categoria
+  -valoriCampi: Map<String, String>
+  -stato: StatoProposta
+  -iscritti: List<String>
+  -observers: List<Observer>
+  
+  +aggiungiIscritto(usernameFruitore: String): boolean
+  +rimuoviIscritto(usernameFruitore: String): boolean
+  +setStato(nuovoStato: StatoProposta)
+  
+  +addObserver(o: Observer)
+  +removeObserver(o: Observer)
+  +notifyObservers(messaggio: String)
+}
+
+enum StatoProposta {
+  VALIDA
+  APERTA
+  RITIRATA
+  CHIUSA
+  FALLITA
+  CONFERMATA
+  ANNULLATA
+  CONCLUSA
+}
+
+class GestoreProposte {
+  -bacheca: Bacheca
+  +controllaScadenze(sessione: GestoreSessione)
+  -collegaObservers(p: Proposta, sessione: GestoreSessione)
+}
+
+GestoreProposte --> Proposta : "Verifica date e\nagiorna stato"
+Proposta -> Observer : "notifyObservers()\n(stato cambiato)"
+Fruitore ..> Observer : "<<realize>>"
+
+note right of Proposta::setStato
+  if (this.stato != nuovoStato) {
+    this.stato = nuovoStato;
+    notifyObservers("La proposta ha cambiato stato in: " + nuovoStato);
+  }
+end note
+@enduml

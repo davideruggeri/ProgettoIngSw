@@ -1,6 +1,19 @@
 \chapter{Versione 4}
 
 \section{Obbiettivi e Requisiti}
-In questa quarta versione si aggiunge la possibilità per i fruitori di disdire un'iscrizione (entro la scadenza valida) e la facoltà per i configuratori di "Ritirare" un evento già pubblicato o confermato in presenza di cause di forza maggiore.
+\section{Nuove Funzionalità (V4)}
+In questa quarta versione si aggiunge la possibilità per i fruitori di disdire un'iscrizione (entro la scadenza valida) e la facoltà per i configuratori di \textbf{Ritirare} un evento già pubblicato o confermato in presenza di cause di forza maggiore.
 
-% Sezioni d'uso e diagramma classi da espandere a tempo debito.
+\begin{enumerate}
+    \item \textbf{Cancellazione lato Fruitore}: Disiscrizione ad un'iniziativa Aperta.
+    \item \textbf{Ritiro Proposta lato Configuratore}: Cambia stato in \texttt{RITIRATA} a proposte Aperte o Confermate.
+    \item \textbf{Gestione Memorizzazione}: Salva i fruitori già iscritti di un'niziativa ritirata in modo permanente all'interno del DB per conservare lo storico.
+\end{enumerate}
+
+\section{Casi d'Uso (Aggiornamento V4)}
+Le modifiche alla gestione del lifecycle impattano sia i Configuratori che i Fruitori.
+Il file sorgente PlantUML aggiornato è \texttt{v4\_casi\_uso.puml}.
+
+\section{Aggiornamenti al Diagramma delle Classi}
+Il diagramma generato per la \textbf{Versione 3} copre di fatto la totalità del pattern architetturale, dato che il passaggio a stato RITIRATA riutilizza in modo naturale il pattern \texttt{Observer} senza grosse variazioni all'UML delle dipendenze. Viene semplicemente mappato il nuovo enumeratore \texttt{RITIRATA} per il campo di classe \texttt{StatoProposta}.
+
