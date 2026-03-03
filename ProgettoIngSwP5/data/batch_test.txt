@@ -1,0 +1,22 @@
+# File batch di test - Versione 5
+# Formato: COMANDO;parametro1;parametro2;...
+
+# 1. Crea una categoria Escursionismo
+CREA_CATEGORIA;Escursionismo;Attività di trekking e camminate in montagna
+
+# 2. Aggiungi un campo specifico alla categoria
+AGGIUNGI_CAMPO;Escursionismo;Difficoltà;Livello di difficoltà del percorso;OPZIONALE;STRINGA
+AGGIUNGI_CAMPO;Escursionismo;Dislivello;Dislivello in metri;OPZIONALE;INTERO
+
+# 3. Crea una proposta per l'escursionismo
+# Formato: CREA_PROPOSTA;Cat;Titolo;DataConclusiva;TermineIscrizione;Ora;Luogo;NumPart;Quota
+# Data (30/06) deve essere >= TermineIscrizione (20/06) + 2gg -> OK
+CREA_PROPOSTA;Escursionismo;Gita al Monte Generoso;30/06/2027;20/06/2027;08:00;Mendrisio;15;25
+
+# 4. Pubblica la proposta
+PUBBLICA_PROPOSTA;Gita al Monte Generoso
+
+# 5. Test con errori intenzionali
+CREA_CATEGORIA;Escursionismo;Categoria duplicata - deve dare errore
+AGGIUNGI_CAMPO;CategoriaInesistente;Campo;Descr;OBBLIGATORIO;STRINGA
+COMANDO_SCONOSCIUTO;param1;param2

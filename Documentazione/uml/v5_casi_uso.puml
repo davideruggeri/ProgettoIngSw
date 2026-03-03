@@ -1,0 +1,59 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Configuratore" as Admin
+actor "Fruitore" as User
+
+rectangle "Applicazione Proposte - Versione 5" {
+
+    package "Gestione Categorie" {
+      usecase "Login / Cambio Password" as UC1
+      usecase "Visualizza Categorie" as UC2
+      usecase "Crea Categoria" as UC3
+      usecase "Modifica Categoria" as UC4
+      usecase "Rimuovi Categoria" as UC5
+      usecase "Aggiungi Campo Comune" as UC6
+    }
+
+    package "Gestione Proposte" {
+      usecase "Crea Proposta" as UC7
+      usecase "Pubblica Proposta" as UC8
+      usecase "Visualizza Bacheca" as UC9
+      usecase "Ritira Proposta" as UC10
+      usecase "Importa da File Batch" as UC11
+    }
+
+    package "Funzionalità Fruitore" {
+      usecase "Registrazione" as UC12
+      usecase "Iscrizione a Proposta" as UC13
+      usecase "Disiscrizione da Proposta" as UC14
+      usecase "Visualizza Notifiche" as UC15
+      usecase "Cancella Notifica" as UC16
+    }
+}
+
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC4
+Admin --> UC5
+Admin --> UC6
+Admin --> UC7
+Admin --> UC8
+Admin --> UC9
+Admin --> UC10
+Admin --> UC11
+
+User --> UC12
+User --> UC9
+User --> UC13
+User --> UC14
+User --> UC15
+User --> UC16
+
+UC7 .> UC8 : <<include>>
+UC16 .> UC15 : <<include>>
+UC10 .> UC15 : <<include>>
+
+@enduml

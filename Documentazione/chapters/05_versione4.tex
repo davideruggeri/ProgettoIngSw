@@ -1,19 +1,49 @@
 \chapter{Versione 4}
 
-\section{Obbiettivi e Requisiti}
-\section{Nuove Funzionalità (V4)}
-In questa quarta versione si aggiunge la possibilità per i fruitori di disdire un'iscrizione (entro la scadenza valida) e la facoltà per i configuratori di \textbf{Ritirare} un evento già pubblicato o confermato in presenza di cause di forza maggiore.
+\section{Obiettivi e Requisiti}
+La quarta versione consolida la gestione del ciclo di vita delle proposte introducendo due nuove operazioni complementari: il \textbf{Ritiro} di un'iniziativa da parte del Configuratore per cause di forza maggiore, e la \textbf{Disiscrizione} formale da parte del Fruitore entro il termine utile.
 
+\section{Nuove Funzionalità (V4)}
 \begin{enumerate}
-    \item \textbf{Cancellazione lato Fruitore}: Disiscrizione ad un'iniziativa Aperta.
-    \item \textbf{Ritiro Proposta lato Configuratore}: Cambia stato in \texttt{RITIRATA} a proposte Aperte o Confermate.
-    \item \textbf{Gestione Memorizzazione}: Salva i fruitori già iscritti di un'niziativa ritirata in modo permanente all'interno del DB per conservare lo storico.
+    \item \textbf{Ritiro Proposta (Configuratore)}: Il configuratore può ritirare una proposta in stato \texttt{APERTA} o \texttt{CONFERMATA}, a condizione che non sia ancora iniziata (cioè la data dell'evento deve essere ancora futura). La proposta transisce allo stato \texttt{RITIRATA} e tutti i fruitori iscritti vengono automaticamente notificati via Observer.
+    \item \textbf{Disiscrizione Fruitore (formalizzata in V4)}: Il Fruitore può ritirare la propria iscrizione finché la proposta è in stato \texttt{APERTA} e il \textit{Termine ultimo di iscrizione} non è ancora scaduto. Il sistema verifica esplicitamente questa condizione temporale.
+    \item \textbf{Persistenza dello Storico}: Le proposte ritirate (con la lista degli iscritti congelata) restano serializzate nel file JSON di bacheca, garantendo la tracciabilità storica delle iscrizioni.
 \end{enumerate}
 
 \section{Casi d'Uso (Aggiornamento V4)}
-Le modifiche alla gestione del lifecycle impattano sia i Configuratori che i Fruitori.
-Il file sorgente PlantUML aggiornato è \texttt{v4\_casi\_uso.puml}.
+\begin{itemize}
+    \item \textbf{Ritiro Proposta Esistente} (Configuratore)
+    \item \textbf{Disiscrizione entro scadenza} (Fruitore)
+\end{itemize}
+Il file sorgente PlantUML è \texttt{v4\_casi\_uso.puml}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{../uml/casi_uso_V4.png}
+    \caption{Diagramma dei Casi d'Uso - Versione 4}
+    \label{fig:uc_v4}
+\end{figure}
 
-\section{Aggiornamenti al Diagramma delle Classi}
-Il diagramma generato per la \textbf{Versione 3} copre di fatto la totalità del pattern architetturale, dato che il passaggio a stato RITIRATA riutilizza in modo naturale il pattern \texttt{Observer} senza grosse variazioni all'UML delle dipendenze. Viene semplicemente mappato il nuovo enumeratore \texttt{RITIRATA} per il campo di classe \texttt{StatoProposta}.
+\section{Architettura e Design (Aggiunte rispetto a V3)}
+
+\subsection{Nuovo Stato dell'Enum}
+\begin{itemize}
+    \item \textbf{\texttt{StatoProposta.RITIRATA}}: Stato terminale che indica il ritiro forzato dell'iniziativa.
+\end{itemize}
+
+\subsection{Metodi Principali Aggiunti}
+\begin{itemize}
+    \item \textbf{\texttt{GestoreProposte.ritiraProposta(Proposta, GestoreSessione)}}: Verifica le condizioni temporali, richiama \texttt{collegaObservers()} per garantire che i Fruitori iscritti siano observer attivi, poi chiama \texttt{setStato(RITIRATA)} su \texttt{Proposta}, che propaga automaticamente la notifica via pattern Observer.
+    \item \textbf{\texttt{MainCLI.ritiraProposta()}}: Mostra al Configuratore le proposte ritirabili (Aperte o Confermate), richiede conferma e delega a \texttt{GestoreProposte}.
+    \item \textbf{\texttt{MainCLI.ritiraIscrizione()}} (aggiornata): Aggiunge controllo esplicito sul \textit{Termine ultimo di iscrizione} prima di permettere la disiscrizione.
+\end{itemize}
+
+\subsection{Diagramma delle Classi}
+Le modifiche in V4 riguardano i metodi esistenti e l'estensione dell'enum \texttt{StatoProposta}. Il file sorgente è \texttt{v4\_diagramma\_classi.puml}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{../uml/uml_V4.png}
+    \caption{Diagramma delle Classi - Versione 4}
+    \label{fig:class_v4}
+\end{figure}
 

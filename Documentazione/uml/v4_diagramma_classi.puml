@@ -2,45 +2,62 @@
 skinparam classAttributeIconSize 0
 
 skinparam class {
-  BackgroundColor<<new>> #d4edda
-  BorderColor<<new>> #28a745
+  BackgroundColor<<modified>> #fff3cd
+  BorderColor<<modified>> #856404
   BackgroundColor<<inherited>> #f0f0f0
   BorderColor<<inherited>> #999999
   FontColor<<inherited>> #666666
 }
 
-skinparam interface {
-  BackgroundColor<<new>> #cce5ff
-  BorderColor<<new>> #004085
-}
-
 legend top right
-  |<#cce5ff>  <b>Blu</b>   | Interfacce nuove V3 |
-  |<#d4edda>  <b>Verde</b> | Classe nuova V3 |
-  |<#f0f0f0>  <b>Grigio</b>| Ereditato da V2 |
+  |<#fff3cd>  <b>Giallo</b>| Modificato in V4 |
+  |<#f0f0f0>  <b>Grigio</b>| Ereditato da V3 |
 endlegend
 
-' --- Interfacce nuove V3 (blu) ---
-interface Observer <<new>> {
+' --- Classe/Enum modificati in V4 (giallo) ---
+enum StatoProposta <<modified>> {
+  VALIDA
+  APERTA
+  CONFERMATA
+  ANNULLATA
+  CONCLUSA
+  <b>RITIRATA</b>
+}
+
+class GestoreProposte <<modified>> {
+  -bacheca: Bacheca
+  -proposteValide: Map<String, Proposta>
+  +validaProposta(p: Proposta): boolean
+  +pubblicaProposta(p: Proposta)
+  +controllaScadenze(s: GestoreSessione)
+  +ritiraProposta(p: Proposta, s: GestoreSessione): boolean
+  -collegaObservers(p: Proposta, s: GestoreSessione)
+  +getProposteValide(): Map<String, Proposta>
+  +getBacheca(): Bacheca
+}
+
+class MainCLI <<modified>> {
+  -gestoreCategorie: GestoreCategorie
+  -gestoreSessione: GestoreSessione
+  -gestoreProposte: GestoreProposte
+  -vista: InterfacciaConsole
+  +run()
+  -ritiraProposta()
+  -ritiraIscrizione()
+  +{static} main(args: String[])
+}
+
+' --- Ereditato da V3 (grigio) ---
+interface Observer <<inherited>> {
   +update(messaggio: String)
 }
 
-interface Observable <<new>> {
+interface Observable <<inherited>> {
   +addObserver(o: Observer)
   +removeObserver(o: Observer)
   +notifyObservers(messaggio: String)
 }
 
-' --- Classe nuova V3 (verde) ---
-class Fruitore <<new>> {
-  -notifiche: List<String>
-  +aggiungiNotifica(msg: String)
-  +rimuoviNotifica(i: int): boolean
-  +getNotifiche(): List<String>
-  +update(messaggio: String)
-}
-
-' --- Ereditato da V2 (grigio) ---
 abstract class Utente <<inherited>> {
   -nomeUtente: String
   -password: String
@@ -50,6 +67,38 @@ abstract class Utente <<inherited>> {
 }
 
 class Configuratore <<inherited>> {
+}
+
+class Fruitore <<inherited>> {
+  -notifiche: List<String>
+  +aggiungiNotifica(msg: String)
+  +rimuoviNotifica(i: int): boolean
+  +getNotifiche(): List<String>
+  +update(msg: String)
+}
+
+class Proposta <<inherited>> {
+  -categoria: Categoria
+  -valoriCampi: Map<String, String>
+  -stato: StatoProposta
+  -iscritti: List<String>
+  -observers: List<Observer>
+  +impostaValore(nome: String, val: String)
+  +getValore(nome: String): String
+  +verificaValidita(): boolean
+  +pubblica()
+  +aggiungiIscritto(username: String): boolean
+  +rimuoviIscritto(username: String): boolean
+  +setStato(nuovoStato: StatoProposta)
+  +addObserver(o: Observer)
+  +removeObserver(o: Observer)
+  +notifyObservers(msg: String)
+}
+
+class Bacheca <<inherited>> {
+  -proposte: Map<String, List<Proposta>>
+  +aggiungiPropostaAperta(p: Proposta)
+  +getTutteLeProposte(): Map<String, List<Proposta>>
 }
 
 class Categoria <<inherited>> {
@@ -80,41 +129,6 @@ enum TipoCampo <<inherited>> {
   BOOLEANO
   DATA
   ORA
-}
-
-class Bacheca <<inherited>> {
-  -proposte: Map<String, List<Proposta>>
-  +aggiungiPropostaAperta(p: Proposta)
-  +getTutteLeProposte(): Map<String, List<Proposta>>
-}
-
-class Proposta <<inherited>> {
-  -categoria: Categoria
-  -valoriCampi: Map<String, String>
-  -stato: StatoProposta
-  -iscritti: List<String>
-  -observers: List<Observer>
-  +aggiungiIscritto(username: String): boolean
-  +rimuoviIscritto(username: String): boolean
-  +setStato(nuovoStato: StatoProposta)
-  +addObserver(o: Observer)
-  +removeObserver(o: Observer)
-  +notifyObservers(msg: String)
-}
-
-enum StatoProposta <<inherited>> {
-  VALIDA
-  APERTA
-  CONFERMATA
-  ANNULLATA
-  CONCLUSA
-  RITIRATA
-}
-
-class GestoreProposte <<inherited>> {
-  -bacheca: Bacheca
-  +controllaScadenze(s: GestoreSessione)
-  -collegaObservers(p: Proposta, s: GestoreSessione)
 }
 
 class GestoreSessione <<inherited>> {
@@ -159,34 +173,27 @@ class InterfacciaConsole <<inherited>> {
   +stampaMessaggio(msg: String)
 }
 
-class MainCLI <<inherited>> {
-  -gestoreCategorie: GestoreCategorie
-  -gestoreSessione: GestoreSessione
-  -gestoreProposte: GestoreProposte
-  -vista: InterfacciaConsole
-  +run()
-  +{static} main(args: String[])
-}
-
 ' --- Relazioni ---
 Configuratore --|> Utente
 Fruitore --|> Utente
 Fruitore ..|> Observer
 Proposta ..|> Observable
-Proposta --> Categoria : "basata su"
-Proposta --> StatoProposta : "ha stato"
+Proposta --> StatoProposta
 Proposta --> Observer
 Categoria --> Campo : "contiene"
 Categoria --> Categoria : "sottocategoria"
 Campo --> TipoCampo
-GestoreProposte --> Bacheca : "gestisce"
-Bacheca "1" --> "*" Proposta : "contiene"
-GestoreProposte --> GestoreSessione : "usa"
-GestoreFile ..> Proposta : "persiste"
-GestoreFile ..> JsonUtil : "usa"
+GestoreProposte --> Bacheca
+GestoreProposte --> GestoreSessione
+Bacheca "1" --> "*" Proposta
 MainCLI --> GestoreCategorie
+GestoreCategorie --> Categoria: "gestisce"
 MainCLI --> GestoreSessione
 MainCLI --> GestoreProposte
 MainCLI --> InterfacciaConsole
 MainCLI ..> GestoreFile : "usa"
+GestoreFile ..> JsonUtil
+GestoreFile ..> Proposta
+GestoreFile ..> GestoreCategorie
+
 @enduml

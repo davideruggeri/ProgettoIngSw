@@ -4,30 +4,36 @@ skinparam packageStyle rectangle
 
 actor "Configuratore" as Admin
 actor "Fruitore" as User
-actor "Sistema (Cron)" as System
 
 rectangle "Applicazione Proposte - Versione 4" {
-    package "Configuratore Actions" {
-      usecase "Ritira Proposta\n(Aperta o Confermata)" as UC1
-    }
-    
-    package "Fruitore Actions" {
-      usecase "Ritiro Iscrizione\n(Disiscrizione in tempo utile)" as UC2
-      usecase "Re-Iscrizione" as UC3
+    package "V3 (Configuratore)" {
+      usecase "Gestisci Categorie e Campi" as UC_A
+      usecase "Crea e Pubblica Proposta" as UC_B
+      usecase "Visualizza Bacheca" as UC_C
     }
 
-    package "System Actions" {
-      usecase "Congelamento Partecipanti" as UC4
-      usecase "Notifica Automatica Ritiro" as UC5
+    package "V3 (Fruitore)" {
+      usecase "Iscrizione a Proposta" as UC_D
+      usecase "Visualizza Notifiche" as UC_E
+    }
+
+    package "V4" {
+      usecase "Ritira Proposta\n(Aperta o Confermata)" as UC1
+      usecase "Disiscrizione con\ncontrollo scadenza" as UC2
+      usecase "Notifica Automatica Ritiro\na tutti gli iscritti" as UC5
+      usecase "Storico iscritti\nconservato" as UC4
     }
 }
 
+Admin --> UC_A
+Admin --> UC_B
+Admin --> UC_C
 Admin --> UC1
-User --> UC2
-User --> UC3
 
-System --> UC4
-System --> UC5
+User --> UC_D
+User --> UC_E
+User --> UC2
+
 UC1 .> UC5 : <<include>>
 UC1 .> UC4 : <<include>>
 

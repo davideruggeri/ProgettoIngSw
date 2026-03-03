@@ -4,31 +4,22 @@ skinparam packageStyle rectangle
 
 actor "Configuratore" as Admin
 actor "Fruitore" as User
-actor "Sistema (Cron)" as System
 
 rectangle "Applicazione Proposte - Versione 3" {
-    package "Configuratore Actions" {
-      usecase "Crea Categoria" as UC1
-      usecase "Aggiungi Campo Comune" as UC2
-      usecase "Gestisci Categorie" as UC3
-      usecase "Visualizza Categorie" as UC4
-      usecase "Crea Proposta" as UC5
-      usecase "Pubblica Proposta (Aperta)" as UC6
-      usecase "Visualizza Bacheca" as UC7
-    }
-    
-    package "Fruitore Actions" {
-      usecase "Registrazione (Primo Accesso)" as UC8
-      usecase "Visualizza Bacheca (Aperte)" as UC9
-      usecase "Iscrizione a Proposta Aperta" as UC10
-      usecase "Ritiro Iscrizione (se Aperta)" as UC11
-      usecase "Visualizza Area Personale (Notifiche)" as UC12
-      usecase "Cancella Notifica" as UC13
+    package "V2 (Configuratore)" {
+      usecase "Login / Cambio Password" as UC1
+      usecase "Gestisci Categorie e Campi" as UC2
+      usecase "Crea e Pubblica Proposta" as UC3
+      usecase "Visualizza Bacheca" as UC4
     }
 
-    package "System Actions" {
-      usecase "Verifica Scadenze Proposte" as UC14
-      usecase "Generazione Automatica Notifiche" as UC15
+    package "V3 (Fruitore)" {
+      usecase "Registrazione" as UC8
+      usecase "Visualizza Bacheca" as UC9
+      usecase "Iscrizione a Proposta Aperta" as UC10
+      usecase "Ritiro Iscrizione" as UC11
+      usecase "Visualizza Notifiche" as UC12
+      usecase "Cancella Notifica" as UC13
     }
 }
 
@@ -36,9 +27,6 @@ Admin --> UC1
 Admin --> UC2
 Admin --> UC3
 Admin --> UC4
-Admin --> UC5
-Admin --> UC6
-Admin --> UC7
 
 User --> UC8
 User --> UC9
@@ -47,8 +35,6 @@ User --> UC11
 User --> UC12
 User --> UC13
 
-System --> UC14
-System --> UC15
-UC14 .> UC15 : <<include>>
+UC13 .> UC12 : <<include>>
 
 @enduml

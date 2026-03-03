@@ -1,0 +1,212 @@
+ @startuml
+skinparam classAttributeIconSize 0
+
+' --- Interfacce ---
+interface Observer {
+  +update(messaggio: String)
+}
+
+interface Observable {
+  +addObserver(o: Observer)
+  +removeObserver(o: Observer)
+  +notifyObservers(messaggio: String)
+}
+
+' --- Model ---
+abstract class Utente {
+  -nomeUtente: String
+  -password: String
+  +setPassword(pwd: String)
+  +getNomeUtente(): String
+  +controllaPassword(pwd: String): boolean
+}
+
+class Configuratore {
+}
+
+class Fruitore {
+  -notifiche: List<String>
+  +aggiungiNotifica(msg: String)
+  +rimuoviNotifica(i: int): boolean
+  +getNotifiche(): List<String>
+  +update(messaggio: String)
+}
+
+class Categoria {
+  -nome: String
+  -descrizione: String
+  -campi: Map<String, Campo>
+  -sottocategorie: List<Categoria>
+  +aggiungiCampo(c: Campo)
+  +rimuoviCampo(nome: String)
+  +getCategoria(nome: String): Campo
+}
+
+class Campo {
+  -nome: String
+  -descrizione: String
+  -obbligatorio: boolean
+  -tipo: TipoCampo
+  +isObbligatorio(): boolean
+  +setObbligatorio(v: boolean)
+}
+
+enum TipoCampo {
+  STRINGA
+  INTERO
+  BOOLEANO
+  DATA
+  ORA
+}
+
+class Proposta {
+  -categoria: Categoria
+  -valoriCampi: Map<String, String>
+  -stato: StatoProposta
+  -iscritti: List<String>
+  -observers: List<Observer>
+  +impostaValore(nome: String, val: String)
+  +getValore(nome: String): String
+  +verificaValidita(): boolean
+  +pubblica()
+  +setStato(nuovoStato: StatoProposta)
+  +aggiungiIscritto(username: String): boolean
+  +rimuoviIscritto(username: String): boolean
+  +addObserver(o: Observer)
+  +removeObserver(o: Observer)
+  +notifyObservers(msg: String)
+}
+
+enum StatoProposta {
+  VALIDA
+  APERTA
+  CONFERMATA
+  ANNULLATA
+  CONCLUSA
+  RITIRATA
+}
+
+class Bacheca {
+  -proposte: Map<String, List<Proposta>>
+  +aggiungiPropostaAperta(p: Proposta)
+  +getProposteApertePerCategoria(cat: String): List<Proposta>
+  +getTutteLeProposte(): Map<String, List<Proposta>>
+}
+
+' --- Controller ---
+class GestoreCategorie {
+  -categorie: List<Categoria>
+  -campiComuni: List<Campo>
+  +aggiungiCategoria(c: Categoria, nomePadre: String)
+  +rimuoviCategoria(nome: String)
+  +getCategoria(nome: String): Categoria
+  +getCategorieRadice(): List<Categoria>
+  +aggiungiCampoComune(c: Campo)
+}
+
+class GestoreSessione {
+  -utenteCorrente: Utente
+  -utenti: List<Utente>
+  +login(user: String, pwd: String): boolean
+  +logout()
+  +isConfiguratore(): boolean
+  +isFruitore(): boolean
+  +getUtenteCorrente(): Utente
+  +getUtente(username: String): Utente
+  +getUtenti(): List<Utente>
+  +setUtenti(lista: List<Utente>)
+}
+
+class GestoreProposte {
+  -bacheca: Bacheca
+  -proposteValide: Map<String, Proposta>
+  +validaProposta(p: Proposta): boolean
+  +pubblicaProposta(p: Proposta)
+  +controllaScadenze(s: GestoreSessione)
+  +ritiraProposta(p: Proposta, s: GestoreSessione): boolean
+  +getBacheca(): Bacheca
+  +getProposteValide(): Map<String, Proposta>
+  -collegaObservers(p: Proposta, s: GestoreSessione)
+}
+
+' --- Storage ---
+class GestoreFile {
+  +{static} salvaCategorie(gc: GestoreCategorie, path: String)
+  +{static} caricaCategorie(path: String): GestoreCategorie
+  +{static} salvaUtenti(lista: List, path: String)
+  +{static} caricaUtenti(path: String): List
+  +{static} salvaProposte(lista: List, path: String)
+  +{static} caricaProposte(path: String, gc: GestoreCategorie): List
+}
+
+class JsonUtil {
+  +{static} toJson(obj: Object): String
+  +{static} fromJson(json: String, type: Type): Object
+}
+
+class ImportatoreBatch {
+  -filePath: String
+  -gestoreCategorie: GestoreCategorie
+  -gestoreProposte: GestoreProposte
+  -righeOk: int
+  -righeErrore: int
+  +esegui()
+  -processaRiga(riga: String)
+  -creaCategoriaCmd(parti: String[])
+  -aggiungiCampoCmd(parti: String[])
+  -creaPropostaCmd(parti: String[])
+  -pubblicaPropostaCmd(parti: String[])
+}
+
+' --- View ---
+class InterfacciaConsole {
+  +leggiStringa(prompt: String): String
+  +leggiIntero(prompt: String): int
+  +leggiBooleano(prompt: String): boolean
+  +stampaMessaggio(msg: String)
+}
+
+class MainCLI {
+  -gestoreCategorie: GestoreCategorie
+  -gestoreSessione: GestoreSessione
+  -gestoreProposte: GestoreProposte
+  -vista: InterfacciaConsole
+  +run()
+  -menuConfiguratore(): boolean
+  -menuFruitore(): boolean
+  -menuProposte()
+  -importaDaFileBatch()
+  -ritiraProposta()
+  -ritiraIscrizione()
+  +{static} main(args: String[])
+}
+
+' --- Relazioni ---
+Configuratore --|> Utente
+Fruitore --|> Utente
+Fruitore ..|> Observer
+Proposta ..|> Observable
+Proposta --> Categoria : "basata su"
+Proposta --> StatoProposta : "ha stato"
+Proposta --> Observer
+Categoria --> Campo : "contiene"
+Categoria --> Categoria : "sottocategoria"
+Campo --> TipoCampo
+GestoreProposte --> Bacheca : "gestisce"
+Bacheca "1" --> "*" Proposta : "contiene"
+GestoreProposte --> GestoreSessione : "usa"
+GestoreCategorie --> Categoria : "gestisce"
+GestoreSessione --> Utente : "autentica"
+GestoreFile ..> JsonUtil : "usa"
+GestoreFile ..> Proposta : "persiste"
+GestoreFile ..> GestoreCategorie : "usa"
+ImportatoreBatch --> GestoreCategorie : "usa"
+ImportatoreBatch --> GestoreProposte : "usa"
+MainCLI --> GestoreCategorie
+MainCLI --> GestoreSessione
+MainCLI --> GestoreProposte
+MainCLI --> InterfacciaConsole
+MainCLI ..> GestoreFile : "usa"
+MainCLI ..> ImportatoreBatch : "crea"
+
+@enduml

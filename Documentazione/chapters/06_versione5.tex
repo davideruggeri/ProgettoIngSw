@@ -1,13 +1,89 @@
 \chapter{Versione 5 e Manuale Utente}
 
-\section{Obbiettivi e Requisiti}
-La quinta e ultima versione consente al Configuratore di importare massivamente dati (Categorie, Campi e Proposte) da file (modalità batch) affiancandola alla modalità interattiva standard.
+\section{Obiettivi e Requisiti}
+La quinta e ultima versione affianca alla modalità interattiva una \textbf{modalità batch}: il Configuratore può fornire un file di testo strutturato all'avvio, contenente comandi per creare massivamente categorie, campi e proposte senza passare per il menu.
+
+\section{Modalità Batch}
+
+\subsection{Formato del File}
+Il file batch è un file di testo semplice (es. \texttt{batch.txt}) in cui ogni riga contiene un comando separato da punto e virgola (\texttt{;}). Le righe vuote e i commenti (che iniziano con \texttt{\#}) vengono ignorati.
+
+\begin{verbatim}
+# Commento: crea una nuova categoria
+CREA_CATEGORIA;NomeCategoria;Descrizione[;NomeParent]
+
+# Aggiunge un campo alla categoria
+AGGIUNGI_CAMPO;NomeCat;NomeCampo;Descrizione;OBBLIGATORIO|OPZIONALE;TIPO
+
+# Crea una proposta (Data nel formato dd/MM/yyyy, Ora HH:mm)
+CREA_PROPOSTA;Cat;Titolo;DataConclusiva;TermineIscrizione;Ora;Luogo;NumPart;Quota
+
+# Pubblica una proposta valida già creata
+PUBBLICA_PROPOSTA;Titolo
+\end{verbatim}
+
+dove \texttt{TIPO} può essere: \texttt{STRINGA}, \texttt{INTERO}, \texttt{BOOLEANO}, \texttt{DATA}, \texttt{ORA}.
+
+\subsection{Esecuzione}
+Il file batch può essere utilizzato in due modi:
+\begin{enumerate}
+    \item \textbf{Argomento da riga di comando} (all'avvio):
+    \begin{verbatim}
+java -cp bin it.unibs.ing.view.MainCLI data/batch.txt
+    \end{verbatim}
+    I comandi vengono elaborati prima che si avvii il loop interattivo.
+    \item \textbf{Voce 7 del menu Configuratore}: \textit{Importa da File Batch}. Permette di specificare il percorso del file all'interno della sessione interattiva.
+\end{enumerate}
+
+\subsection{Output Batch}
+Per ogni comando, il sistema stampa \texttt{[OK]} o \texttt{[ERRORE]} con un messaggio descrittivo. Al termine, viene mostrato un riepilogo: \textit{N OK, M ERRORI}.
+
+\section{Architettura (V5)}
+\begin{itemize}
+    \item \textbf{\texttt{ImportatoreBatch}} (NEW — \texttt{it.unibs.ing.storage}): legge il file riga per riga, effettua il parsing e delega le operazioni ai controller esistenti (\texttt{GestoreCategorie}, \texttt{GestoreProposte}). Tutti gli errori vengono gestiti localmente \textbf{senza interrompere} l'elaborazione delle righe successive.
+    \item \textbf{\texttt{GestoreProposte.getProposteValide()}} (NEW): mappa temporanea in memoria per le proposte create ma non ancora pubblicate durante una sessione batch.
+    \item \textbf{\texttt{MainCLI.main()}} (MODIFIED): accetta un argomento opzionale (\texttt{args[0]}) con il path del file batch, processato prima del loop interattivo.
+\end{itemize}
 
 \section{Diagramma Globale dei Casi d'Uso}
-% Inserire il diagramma finale comprensivo di tutte le versioni, senza più distinguere le differenze cromatiche o incrementali passate.
+Il file sorgente PlantUML è \texttt{v4\_casi\_uso.puml} (tutti i casi d'uso cumulati delle versioni 1-4 più il batch V5).
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../uml/casi_uso_V5.png}
+    \caption{Diagramma Globale dei Casi d'Uso - Versione 5}
+    \label{fig:uc_v5}
+\end{figure}
 
 \section{Diagramma Globale delle Classi}
-% Inserire l'UML delle classi in versione pulita e strutturata definitiva.
+Il diagramma finale delle classi comprende l'intera struttura del sistema, inclusa la nuova classe per l'importazione batch. Il file sorgente è \texttt{v5\_diagramma\_classi.puml}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{../uml/uml_V5.png}
+    \caption{Diagramma delle Classi Finale - Versione 5}
+    \label{fig:class_v5}
+\end{figure}
 
-\section{Manuale Utente e Installazione}
-% Istruzioni operative destinate all'utente finale per installare e usufruire dell'applicazione.
+
+\section{Manuale Utente}
+
+\subsection{Prerequisiti}
+\begin{itemize}
+    \item Java JDK 17 o superiore installato.
+    \item La directory \texttt{data/} deve esistere nella stessa cartella da cui si avvia il programma, altrimenti i file JSON non verranno trovati (il sistema crea una sessione vuota).
+\end{itemize}
+
+\subsection{Avvio Normale (Interattivo)}
+\begin{verbatim}
+cd ProgettoIngSwP5
+java -cp bin it.unibs.ing.view.MainCLI
+\end{verbatim}
+Al primo avvio, effettuare il login con \textbf{admin / admin} e cambiare la password quando richiesto.
+
+\subsection{Avvio con File Batch}
+\begin{verbatim}
+java -cp bin it.unibs.ing.view.MainCLI data/batch.txt
+\end{verbatim}
+I comandi nel file vengono eseguiti prima del menu interattivo. L'output viene stampato in console.
+
+\subsection{Salvataggio Dati}
+I dati vengono salvati automaticamente scegliendo \textit{Salva \& Esci} dal menu. Tre file JSON vengono generati in \texttt{data/}: \texttt{categorie.json}, \texttt{utenti.json}, \texttt{proposte.json}.

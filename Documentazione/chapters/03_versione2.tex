@@ -1,37 +1,50 @@
 \chapter{Versione 2}
 
-\section{Obbiettivi e Requisiti}
-La seconda versione dell'applicazione introduce la possibilità per il Configuratore di proporre vere e proprie iniziative basate sulle Categorie precedentemente create e di renderle pubbliche sulla nuova \textbf{Bacheca}.
+\section{Obiettivi e Requisiti}
+La seconda versione introduce la \textbf{Proposta di Iniziativa}: il Configuratore può ora proporre eventi basati sulle categorie definite in V1, validarli e pubblicarli sulla \textbf{Bacheca} di sistema.
 
 \section{Casi d'Uso (Aggiunte rispetto a V1)}
 
-I casi d'uso base del Configuratore restano invariati. A essi si aggiungono le seguenti funzionalità:
+I casi d'uso base del Configuratore (login, gestione categorie e campi) restano invariati. Si aggiungono:
 
 \begin{enumerate}
     \setcounter{enumi}{7}
-    \item \textbf{Creare Proposta}: Il configuratore seleziona una categoria e compila un modulo per proporre un nuovo evento. Il sistema verifica la congruenza logica delle date e la compilazione dei campi obbligatori, assegnando lo stato \texttt{VALIDA}.
-    \item \textbf{Pubblicare Proposta in Bacheca}: Il configuratore sceglie di rendere pubblica una proposta valida, facendola passare allo stato \texttt{APERTA} nella bacheca di sistema.
-    \item \textbf{Visualizzare Bacheca}: Il configuratore può vedere tutte le proposte attualmente aperte, raggruppate per categoria d'appartenenza.
+    \item \textbf{Creare Proposta}: Il configuratore seleziona una categoria, compila il modulo con tutti i campi obbligatori (Titolo, Data, Termine ultimo iscrizione, Numero partecipanti, Luogo, Ora, Quota). Il sistema verifica le date e assegna lo stato \texttt{VALIDA}.
+    \item \textbf{Pubblicare Proposta in Bacheca}: Il configuratore rende pubblica una proposta valida, che passa allo stato \texttt{APERTA}.
+    \item \textbf{Visualizzare Bacheca}: Il configuratore visualizza tutte le proposte aperte, raggruppate per categoria.
 \end{enumerate}
 
-\subsection{Diagramma UML dei Casi d'Uso (V2)}
-% Inserire qui l'immagine generata dal PlantUML
-Le aggiunte specifiche di questa versione (Creazione Proposta, Pubblicazione, e Visualizzazione Bacheca) sono state evidenziate rispetto al diagramma V1.
+\subsection{Regole di Validazione delle Proposte}
+\begin{itemize}
+    \item Il \textbf{Termine ultimo di iscrizione} deve essere una data futura.
+    \item La \textbf{Data} dell'evento deve essere almeno due giorni dopo il termine di iscrizione.
+    \item Tutti i campi obbligatori (marcati con \texttt{*}) devono essere compilati.
+\end{itemize}
 
+\subsection{Diagramma UML dei Casi d'Uso (V2)}
+Il file sorgente PlantUML è \texttt{v2\_casi\_uso.puml}.
 \begin{figure}[h]
     \centering
-    % \includegraphics[width=0.8\textwidth]{images/uc_v2.png}
+    \includegraphics[width=0.8\textwidth]{../uml/casi_uso_V2.png}
     \caption{Diagramma dei Casi d'Uso - Versione 2}
     \label{fig:uc_v2}
 \end{figure}
 
-\section{Diagramma delle Classi (Aggiunte rispetto a V1)}
+\section{Architettura e Design (Aggiunte rispetto a V1)}
 
-Sono state introdotte le nuove entità \texttt{Proposta}, \texttt{StatoProposta} e la \texttt{Bacheca}, oltre al controller dedicato \texttt{GestoreProposte}.
-% Inserire qui l'immagine generata dal PlantUML
+\subsection{Nuove Classi (V2)}
+\begin{itemize}
+    \item \textbf{\texttt{Proposta}}: contiene la categoria di riferimento, una mappa di valori per i campi, lo stato (\texttt{StatoProposta}) e una lista di iscritti (username).
+    \item \textbf{\texttt{StatoProposta}} (enum): \texttt{VALIDA}, \texttt{APERTA}, \texttt{CONFERMATA}, \texttt{ANNULLATA}, \texttt{CONCLUSA}.
+    \item \textbf{\texttt{Bacheca}}: mappa le proposte per nome categoria. Fornisce metodi di filtro per stato.
+    \item \textbf{\texttt{GestoreProposte}}: coordina validazione, pubblicazione e controllo scadenze.
+\end{itemize}
+
+\subsection{Diagramma delle Classi (Delta V2)}
+Il file sorgente PlantUML è \texttt{v2\_diagramma\_classi.puml}.
 \begin{figure}[h]
     \centering
-    % \includegraphics[width=1\textwidth]{images/class_v2.png}
+    \includegraphics[width=1\textwidth]{../uml/uml_V2.png}
     \caption{Diagramma delle Classi (Delta evidenziati) - Versione 2}
     \label{fig:class_v2}
 \end{figure}

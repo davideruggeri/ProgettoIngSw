@@ -1,0 +1,108 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+abstract class Utente {
+  -nomeUtente: String
+  -password: String
+  +controllaPassword(pwd: String): boolean
+  +setPassword(pwd: String)
+  +getNomeUtente(): String
+}
+
+class Configuratore extends Utente {
+}
+
+class Categoria {
+  -nome: String
+  -descrizione: String
+  -campi: Map<String, Campo>
+  -sottocategorie: List<Categoria>
+  +aggiungiCampo(c: Campo)
+  +rimuoviCampo(nome: String)
+  +getCampi(): Map<String, Campo>
+  +getSottocategorie(): List<Categoria>
+  +getCampo(nome: String): Campo
+}
+
+class Campo {
+  -nome: String
+  -descrizione: String
+  -obbligatorio: boolean
+  -tipo: TipoCampo
+  +isObbligatorio(): boolean
+  +setObbligatorio(v: boolean)
+  +setDescrizione(d: String)
+}
+
+enum TipoCampo {
+  STRINGA
+  INTERO
+  BOOLEANO
+  DATA
+  ORA
+}
+
+class GestoreCategorie {
+  -categorie: List<Categoria>
+  -campiComuni: List<Campo>
+  +aggiungiCategoria(c: Categoria, nomePadre: String)
+  +rimuoviCategoria(nome: String)
+  +getCategoria(nome: String): Categoria
+  +getCategorieRadice(): List<Categoria>
+  +aggiungiCampoComune(c: Campo)
+}
+
+class GestoreSessione {
+  -utenteCorrente: Utente
+  -utenti: List<Utente>
+  +login(user: String, pwd: String): boolean
+  +logout()
+  +isConfiguratore(): boolean
+  +isFruitore(): boolean
+  +getUtenteCorrente(): Utente
+  +getUtenti(): List<Utente>
+  +setUtenti(lista: List<Utente>)
+}
+
+class GestoreFile {
+  +{static} salvaCategorie(gc: GestoreCategorie, path: String)
+  +{static} caricaCategorie(path: String): GestoreCategorie
+  +{static} salvaUtenti(utenti: List<Utente>, path: String)
+  +{static} caricaUtenti(path: String): List<Utente>
+}
+
+class JsonUtil {
+  +{static} toJson(obj: Object): String
+  +{static} fromJson(json: String, type: Type): Object
+}
+
+class InterfacciaConsole {
+  -scanner: Scanner
+  +leggiStringa(prompt: String): String
+  +leggiIntero(prompt: String): int
+  +leggiBooleano(prompt: String): boolean
+  +stampaMessaggio(msg: String)
+}
+
+class MainCLI {
+  -gestoreCategorie: GestoreCategorie
+  -gestoreSessione: GestoreSessione
+  -vista: InterfacciaConsole
+  +run()
+  +{static} main(args: String[])
+}
+
+Configuratore --|> Utente
+GestoreCategorie --> Categoria : "gestisce"
+Categoria --> Campo : "contiene"
+Categoria --> Categoria : "sottocategoria"
+Campo --> TipoCampo
+GestoreSessione --> Utente : "autentica"
+GestoreFile ..> GestoreCategorie : "persiste"
+GestoreFile ..> Utente : "persiste"
+GestoreFile ..> JsonUtil : "usa"
+MainCLI --> GestoreCategorie
+MainCLI --> GestoreSessione
+MainCLI --> InterfacciaConsole
+
+@enduml

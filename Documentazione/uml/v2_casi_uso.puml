@@ -1,0 +1,36 @@
+  @startuml
+  left to right direction
+  skinparam packageStyle rectangle
+
+  actor "Configuratore" as Admin
+
+  rectangle "Applicazione - Versione 2" {
+      package "V1" {
+        usecase "Login / Cambio Password" as UC1
+        usecase "Visualizzare Categorie" as UC2
+        usecase "Creare Categoria" as UC3
+        usecase "Modificare Categoria" as UC4
+        usecase "Rimuovere Categoria" as UC5
+        usecase "Gestire Campi Comuni" as UC6
+      }
+      
+      package "V2" {
+        usecase "Creare Proposta" as UC8
+        usecase "Pubblicare Proposta in Bacheca" as UC9
+        usecase "Visualizzare Bacheca" as UC10
+      }
+  }
+
+  Admin --> UC1
+  Admin --> UC2
+  Admin --> UC3
+  Admin --> UC4
+  Admin --> UC5
+  Admin --> UC6
+  Admin --> UC8
+  Admin --> UC9
+  Admin --> UC10
+
+  UC8 .> UC9 : <<include>>
+
+  @enduml

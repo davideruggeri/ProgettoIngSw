@@ -1,26 +1,64 @@
 \chapter{Versione 3}
 
-\section{Obbiettivi e Requisiti}
-% Da compilare alla fine della Versione 3.
-In questa iterazione viene introdotto il ruolo del \textbf{Fruitore}, il quale può iscriversi alle Proposte Aperte visibili in Bacheca.
-Viene inoltre sviluppata la logica per la gestione degli stati dinamici delle proposte (es. da Aperta a Confermata, o Annullata) tramite il monitoraggio delle date di scadenza e la generazione automatica delle relative \textbf{Notifiche} nelle aree personali dei fruitori.
+\section{Obiettivi e Requisiti}
+La terza versione introduce il ruolo del \textbf{Fruitore}, che può registrarsi al sistema, visualizzare le proposte aperte in Bacheca, iscriversi agli eventi di suo interesse e ricevere aggiornamenti automatici tramite il \textbf{pattern Observer} quando lo stato di un evento cambia.
 
-\section{Casi d'Uso (Aggiunte rispetto a V2)}
-% Inserire qui i nuovi casi d'uso (login fruitore, iscrizione evento, visualizzazione notifiche ecc.)
+\section{Nuove Funzionalità (V3)}
 \begin{enumerate}
-    \item \textbf{Registrazione e Login Fruitore}: Permette al fruitore di accedere e gestire la sua area personale.
-    \item \textbf{Visualizzazione Bacheca}: Il fruitore vede tutte le proposte in stato \texttt{APERTA}.
-    \item \textbf{Iscrizione e Ritiro}: Il fruitore decide se partecipare ad una particolare iniziativa e disdirla se è ancora disponibile.
-    \item \textbf{Gestione Notifiche}: Area in cui compaiono i messaggi automatici dei cambi di stato degli eventi a cui si è holds prenotati.
+    \item \textbf{Registrazione Fruitore}: Al primo accesso con uno username non riconosciuto, il sistema offre la possibilità di creare un account Fruitore.
+    \item \textbf{Iscrizione a Proposta}: Il Fruitore può iscriversi a qualsiasi proposta in stato \texttt{APERTA}, entro il limite massimo di partecipanti.
+    \item \textbf{Ritiro Iscrizione}: Il Fruitore può disdire la propria iscrizione finché la proposta è ancora \texttt{APERTA} e non è scaduto il termine utile.
+    \item \textbf{Area Personale (Notifiche)}: Il Fruitore visualizza e cancella i messaggi ricevuti automaticamente dal sistema quando una proposta a cui è iscritto cambia stato.
+    \item \textbf{Gestione Automatica degli Stati}: Il sistema verifica le scadenze al login e aggiorna automaticamente le proposte: \texttt{APERTA} $\to$ \texttt{CONFERMATA} (target raggiunto) o \texttt{ANNULLATA} (target non raggiunto); \texttt{CONFERMATA} $\to$ \texttt{CONCLUSA} (data evento passata).
 \end{enumerate}
 
-\subsection{Diagramma UML dei Casi d'Uso (V3)}
+\section{Casi d'Uso (Aggiunte rispetto a V2)}
+\begin{itemize}
+    \item \textbf{Registrazione e Login Fruitore}
+    \item \textbf{Visualizzazione Bacheca} (proposte APERTE)
+    \item \textbf{Iscrizione / Ritiro da Proposta Aperta}
+    \item \textbf{Gestione Notifiche personali}
+\end{itemize}
+Il file sorgente PlantUML è \texttt{v3\_casi\_uso.puml}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{../uml/casi_uso_V3.png}
+    \caption{Diagramma dei Casi d'Uso - Versione 3}
+    \label{fig:uc_v3}
+\end{figure}
 
-Il file sorgente PlantUML del nuovo sistema per i fruitori è \texttt{v3\_casi\_uso.puml}.
+\section{Architettura e Design (Aggiunte rispetto a V2)}
 
-\section{Diagramma delle Classi (Aggiunte rispetto a V2)}
-% Inserire qui l'immagine generata dal PlantUML relativa al pattern per Fruitore, Iscrizione, e Notifiche (Observer).
+\subsection{Pattern Observer}
+Il pattern Observer decoupla il meccanismo di notifica dalla logica di gestione degli stati:
+\begin{itemize}
+    \item \textbf{\texttt{Observer}} (interface): definisce \texttt{update(String messaggio)}.
+    \item \textbf{\texttt{Observable}} (interface): definisce \texttt{addObserver}, \texttt{removeObserver}, \texttt{notifyObservers}.
+    \item \textbf{\texttt{Fruitore}} implements \texttt{Observer}: memorizza i messaggi ricevuti in una lista \texttt{notifiche}.
+    \item \textbf{\texttt{Proposta}} implements \texttt{Observable}: notifica tutti gli observer registrati ogniqualvolta \texttt{setStato()} aggiorna lo stato.
+\end{itemize}
 
-Il file sorgente PlantUML del pattern Observer per Fruitore e Proposta è \texttt{v3\_diagramma\_classi.puml}.
+\textbf{Nota tecnica}: La lista \texttt{observers} di \texttt{Proposta} è marcata \texttt{transient} per evitare problemi di serializzazione JSON. Gli observer vengono ricollegati a runtime da \texttt{GestoreProposte.collegaObservers()} prima di ogni cambio di stato.
 
-L'interazione principale vede \texttt{Proposta} agire da \textit{Observable} (soggetto) e \texttt{Fruitore} da \textit{Observer}. Quando la Bancha elabora la scadenza e invoca \texttt{setStato()} sulla Proposta, quest'ultima notifica in automatico tutti i Fruitori iscritti attraverso il metodo \texttt{update()}.
+\subsection{Nuove Classi (V3)}
+\begin{itemize}
+    \item \textbf{\texttt{Fruitore}} extends \texttt{Utente} implements \texttt{Observer}: aggiunge lista \texttt{notifiche}.
+\end{itemize}
+
+\subsection{Metodi Principali Aggiunti}
+\begin{itemize}
+    \item \textbf{\texttt{GestoreProposte.controllaScadenze(GestoreSessione)}}: pianificatore che aggiorna stati e invia notifiche.
+    \item \textbf{\texttt{GestoreSessione.isFruitore()}}: discrimina il tipo utente per il routing del menu.
+    \item \textbf{\texttt{MainCLI.menuFruitore()}}: menu dedicato al Fruitore.
+    \item \textbf{\texttt{MainCLI.iscrivitiProposta()}}: iscrizione con aggiunta automatica come observer.
+    \item \textbf{\texttt{MainCLI.ritiraIscrizione()}}: disiscrizione con rimozione dall'observer list.
+\end{itemize}
+
+\subsection{Diagramma delle Classi (Delta V3 - Pattern Observer)}
+Il file sorgente PlantUML è \texttt{v3\_diagramma\_classi.puml}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{../uml/uml_V3.png}
+    \caption{Diagramma delle Classi con Pattern Observer - Versione 3}
+    \label{fig:class_v3}
+\end{figure}
