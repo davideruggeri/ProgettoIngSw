@@ -1,0 +1,88 @@
+\chapter{Manuale Utente}
+
+Questo capitolo raccoglie la manualistica necessaria all'utilizzo dell'ultima versione del software "Gestione Iniziative e Bacheca Eventi".
+
+\section{Installazione e Avvio}
+
+L'applicativo è progettato in puro linguaggio Java come interfaccia a linea di comando (CLI). Non richiede installazioni di server o database esterni, poichè poggia su un file system locale minimale tramite formati JSON.
+
+\subsection{Prerequisiti di Sistema}
+Per poter avviare correttamente il programma, è richiesto disporre di:
+\begin{itemize}
+    \item \textbf{Java Development Kit (JDK)}: versione 17 o superiore.
+    \item I file sorgenti del progetto posizionati in una directory locale sul proprio computer.
+\end{itemize}
+
+\subsection{Struttura di Salvataggio Dati}
+Il software salva tutte le informazioni (categorie, proposte, e profili utenti) in una cartella denominata \texttt{data/} rispetto alla directory di esecuzione del progetto. 
+\textbf{Nota:} Qualora questa cartella non sia presente (ad esempio, al primissimo avvio assoluto senza pacchetti di configurazione pre-esitenti), il codice la creerà automaticamente e popolerà i sistemi con asset di base al primo salvataggio.
+
+\subsection{Avvio tramite Ambiente di Sviluppo (IDE)}
+Il metodo più agevole ed immediato per i test è tramite IDE (Visual Studio Code, Eclipse, IntelliJ, ecc.):
+\begin{enumerate}
+    \item Importare o aprire la cartella dell'ultima versione (\texttt{ProgettoIngSwP5}).
+    \item Posizionarsi sul pacchetto principale \texttt{it.unibs.ing.view}.
+    \item Avviare / Lanciare la classe \texttt{MainCLI.java}. L'applicazione interagirà tramite il terminale testuale integrato.
+\end{enumerate}
+
+\subsection{Avvio tramite Riga di Comando (Terminale)}
+Per chi desidera compilare e navigare il programma unicamente servendosi di prompt a riga di comando:
+\begin{enumerate}
+    \item Posizionarsi all'interno della cartella di base del progetto (es. \texttt{cd c:/App/ProgettoIngSw/ProgettoIngSwP5}).
+    \item Compilare i file sorgenti all'interno di una cartella destinazione, come \texttt{bin}:
+    \begin{verbatim}
+    javac -d bin src/it/unibs/ing/**/*.java
+    \end{verbatim}
+    \item Invocare l'interprete Java sulla classe che contiene il Main:
+    \begin{verbatim}
+    java -cp bin it.unibs.ing.view.MainCLI
+    \end{verbatim}
+\end{enumerate}
+
+\subsection{Avvio speciale con Importazione Batch (V5)}
+Sempre da riga di comando, è possibile lanciare il programma fornendo come parametro posizionale (argomento) il percorso di un file di test testuale per innescare la procedura di auto-compilazione da File Batch dei dati in fase di avvio pulito:
+\begin{verbatim}
+    java -cp bin it.unibs.ing.view.MainCLI data/test_batch.txt
+\end{verbatim}
+L'applicativo interpreterà i comandi testuali prima di aprire il Login.
+
+\section{Operatività e Manuale d'Uso}
+
+All'avvio, l'applicativo richiederà l'autenticazione tramite un prompt testuale. Esistono due ruoli principali: \textbf{Configuratore} (Amministratore) e \textbf{Fruitore} (Utente base). Di seguito viene spiegato come agire e quali funzionalità sono presenti nei rispettivi pannelli.
+
+\subsection{Primo Accesso al Sistema (Login e Registrazione)}
+\begin{itemize}
+    \item \textbf{Accesso come Configuratore}: Se si avvia il sistema per la prima volta (nessun salvataggio precedente), è necessario effettuare il login con \textit{Nome Utente}: \texttt{admin} e \textit{Password}: \texttt{admin}. Il sistema riconoscerà il primo accesso di default e forzerà l'utente a cambiare la password inserendone una nuova (diversa da "admin").
+    \item \textbf{Registrazione come Fruitore}: Al prompt del Login, è sufficiente digitare un qualsiasi nome utente desiderato. Poiché il sistema non lo troverà tra gli utenti registrati, domanderà: \textit{"Vuoi registrarti come nuovo Fruitore con questo nome utente?"}. Scrivendo \texttt{si} (o \texttt{true} in base all'input), chiederà l'immissione di una password e l'account Fruitore sarà istantaneamente creato e validato.
+\end{itemize}
+
+\subsection{Menu del Configuratore (Amministratore)}
+Una volta autenticato come Configuratore, viene presentato un Menu principale. Digitando l'Option number desiderato e premendo \texttt{Invio}, si accede alle funzioni di gestione:
+
+\begin{enumerate}
+    \item \textbf{1. Visualizza Categorie}: Stampa a schermo l'elenco e l'albero gerarchico completo delle Categorie esistenti, esplodendo la vista anche delle relative \textit{Sottocategorie} e indicando quanti campi specifici possiedono.
+    \item \textbf{2. Crea Nuova Categoria}: Avvia il wizard di creazione. Il sistema richiederà in sequenza: \textit{Nome}, \textit{Descrizione}, chiedendo in seguito se debba essere legata come Sottocategoria ad una categoria preesistente (indicando il nome del Padre). Infine, la procedura chiederà ciclicamente all'utente se desidera inserire nuovi \textbf{Campi Specifici}. Per ogni campo domanderà il Nome, la Descrizione, l'Obbligatorietà e il Tipo (da 0 a 5 per scegliere Stringa, Intero, Booleano, Data, Ora, Double).
+    \item \textbf{3. Aggiungi Campo Comune}: Permette di dichiarare un campo che verrà forzatamente innestato contemporaneamente all'interno di \textit{tutte} le categorie strutturali. Richiede Nome, Tipo e Obbligatorietà.
+    \item \textbf{4. Rimuovi Categoria}: Inserendo il nome esatto della Categoria, il sistema provvederà ad eliminarla dall'albero (se possibile in base ai vincoli in essere).
+    \item \textbf{5. Modifica Categoria}: Offre la possibilità di selezionare una Categoria ed entrare in modifica di uno dei suoi Campi Specifici: è possibile rettificarne la Descrizione, l'Obbligatorietà, o rimuovere il campo stesso dalla struttura.
+    \item \textbf{6. Gestisci Proposte (Sottomenu)}:
+    \begin{itemize}
+        \item \textit{6.1 Crea Nuova Proposta}: Chiede di selezionare in quale Categoria creare l'iniziativa e farà compilare i campi uno per uno. Al termine validerà severamente le Date (es. la data limite d'iscrizione deve precedere di almeno due giorni l'inizio) e lascerà scegliere se pubblicarla subito.
+        \item \textit{6.2 Pubblica Proposta}: Permette di inserire in Bacheca le proposte tenute "Lavorazione" o ritirate in precedenza.
+        \item \textit{6.3 Visualizza Bacheca}: Mostra la vetrina completa delle Proposte Aperte visibili al pubblico.
+        \item \textit{6.4 Ritira Proposta}: In caso di emergenza o cause di forza maggiore, l'immissione di questo comando passa lo stato della proposta in \textbf{Ritirata}. A livello logico invaliderà le iscrizioni, avviserà i Partecipanti, pur conservando uno storico dei dati.
+    \end{itemize}
+    \item \textbf{7. Importa da File Batch}: Richiede il path ad un file \texttt{.txt} a riga singola (es. \texttt{data/test\_batch.txt}) per simulare una rapida configurazione massiva di categorie e proposte.
+    \item \textbf{8. Logout / 9. Salva \& Esci}: La funzione di Logout rimanda l'utente al Login schermandolo dai dati. "Salva \& Esci" compie la medesima azione del logout finale, ma si assicura tassativamente che l'intera mappa persistente venga serializzata nei file \texttt{.json}.
+\end{enumerate}
+
+\subsection{Menu del Fruitore (Utente Base)}
+Effettuando il Login nel ruolo del fruitore, l'utente avrà accesso interattivo alle funzioni della Bacheca Eventi.
+
+\begin{enumerate}
+    \item \textbf{1. Visualizza Bacheca}: Enumera sul prompt tutte le iniziatve esposte in stato \textbf{APERTA}. Ne mostra Titolo, Luogo, Informazioni e la capienza (posti occupati/posti totali previsti).
+    \item \textbf{2. Iscriviti a una Proposta}: Permette all'utente di selezionare una Categoria e poi di scegliere con numero puntuale la proposta alla quale prender parte. Se la capienza del \textit{Numero Partecipanti} non è stata raggiunta, viene effettuata l'associazione utente-evento in database.
+    \item \textbf{3. Ritira l'Iscrizione}: Mostra al Fruitore l'elenco unicamente dei propri impegni futuri. Permette di annullare la propria presenza per un determinato evento a patto di ritirare l'iscrizione anticipatamente rispetto alla \textit{Data ultima di Iscrizione}.
+    \item \textbf{4. Area Personale (Notifiche)}: La casella Inbox dell'utente. All'avvio del programma o al cambio di giorno, il \textbf{GestoreProposte} scorre tutte le scadenze: se una Proposta raggiunge il quorum di partecipanti, passa di stato ed avvisa via design pattern Observer inviando una notifica scritta qui in Area Personale a tutti gli acquirenti.
+    \item \textbf{5. Logout / 6. Salva \& Esci}: Rientro all'area di autenticazione o spegnimento in scrittura sul filesystem Json.
+\end{enumerate}
