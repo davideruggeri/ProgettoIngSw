@@ -1,4 +1,4 @@
-\chapter{Versione 5 e Manuale Utente}
+\chapter{Versione 5}
 
 \section{Obiettivi e Requisiti}
 La quinta e ultima versione affianca alla modalità interattiva una \textbf{modalità batch}: il Configuratore può fornire un file di testo strutturato all'avvio, contenente comandi per creare massivamente categorie, campi e proposte senza passare per il menu.
@@ -46,44 +46,22 @@ Per ogni comando, il sistema stampa \texttt{[OK]} o \texttt{[ERRORE]} con un mes
 \end{itemize}
 
 \section{Diagramma Globale dei Casi d'Uso}
-Il file sorgente PlantUML è \texttt{v4\_casi\_uso.puml} (tutti i casi d'uso cumulati delle versioni 1-4 più il batch V5).
+Qui sono illustrati tutti i casi d'uso cumulati delle versioni 1-4 più l'aggiunta dell'importazione batch (V5).
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.9\textwidth]{../uml/casi_uso_V5.png}
+    \includegraphics[width=0.9\textwidth]{./uml/casi_uso_V5.png}
     \caption{Diagramma Globale dei Casi d'Uso - Versione 5}
     \label{fig:uc_v5}
 \end{figure}
 
 \section{Diagramma Globale delle Classi}
-Il diagramma finale delle classi comprende l'intera struttura del sistema, inclusa la nuova classe per l'importazione batch. Il file sorgente è \texttt{v5\_diagramma\_classi.puml}.
+Il diagramma finale delle classi comprende l'intera struttura del sistema, inclusa la nuova classe per l'importazione batch.
 \begin{figure}[h]
     \centering
-    \includegraphics[width=1\textwidth]{../uml/uml_V5.png}
+    \includegraphics[width=1\textwidth]{./uml/uml_V5.png}
     \caption{Diagramma delle Classi Finale - Versione 5}
     \label{fig:class_v5}
 \end{figure}
 
 
-\section{Manuale Utente}
 
-\subsection{Prerequisiti}
-\begin{itemize}
-    \item Java JDK 17 o superiore installato.
-    \item La directory \texttt{data/} deve esistere nella stessa cartella da cui si avvia il programma, altrimenti i file JSON non verranno trovati (il sistema crea una sessione vuota).
-\end{itemize}
-
-\subsection{Avvio Normale (Interattivo)}
-\begin{verbatim}
-cd ProgettoIngSwP5
-java -cp bin it.unibs.ing.view.MainCLI
-\end{verbatim}
-Al primo avvio, effettuare il login con \textbf{admin / admin} e cambiare la password quando richiesto.
-
-\subsection{Avvio con File Batch}
-\begin{verbatim}
-java -cp bin it.unibs.ing.view.MainCLI data/batch.txt
-\end{verbatim}
-I comandi nel file vengono eseguiti prima del menu interattivo. L'output viene stampato in console.
-
-\subsection{Salvataggio Dati}
-I dati vengono salvati automaticamente scegliendo \textit{Salva \& Esci} dal menu. Tre file JSON vengono generati in \texttt{data/}: \texttt{categorie.json}, \texttt{utenti.json}, \texttt{proposte.json}.
