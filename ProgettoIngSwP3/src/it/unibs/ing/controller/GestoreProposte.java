@@ -78,21 +78,21 @@ public class GestoreProposte {
             for (Proposta p : lista) {
                 try {
                     if (p.getStato() == StatoProposta.APERTA) {
-                        String scadenzaStr = p.getValore("Termine ultimo di iscrizione");
-                        if (scadenzaStr != null) {
-                            LocalDate scadenza = LocalDate.parse(scadenzaStr, formatter);
-                            if (oggi.isAfter(scadenza)) {
-                                int target = 0;
-                                try {
-                                    target = Integer.parseInt(p.getValore("Numero di partecipanti"));
-                                } catch (Exception ignored) {
-                                }
+                        int target = 0;
+                        try {
+                            target = Integer.parseInt(p.getValore("Numero di partecipanti"));
+                        } catch (Exception ignored) {
+                        }
 
-                                collegaObservers(p, sessione);
-
-                                if (p.getIscritti().size() >= target) {
-                                    p.setStato(StatoProposta.CONFERMATA);
-                                } else {
+                        if (p.getIscritti().size() >= target) {
+                            collegaObservers(p, sessione);
+                            p.setStato(StatoProposta.CONFERMATA);
+                        } else {
+                            String scadenzaStr = p.getValore("Termine ultimo di iscrizione");
+                            if (scadenzaStr != null) {
+                                LocalDate scadenza = LocalDate.parse(scadenzaStr, formatter);
+                                if (oggi.isAfter(scadenza)) {
+                                    collegaObservers(p, sessione);
                                     p.setStato(StatoProposta.ANNULLATA);
                                 }
                             }

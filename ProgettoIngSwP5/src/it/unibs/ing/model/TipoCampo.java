@@ -8,5 +8,6 @@ public enum TipoCampo {
     INTERO, // Numeri interi
     BOOLEANO, // Vero/Falso
     DATA, // Data (senza orario)
-    ORA // Orario
+    ORA, // Orario
+    DOUBLE // Numero decimale
 }

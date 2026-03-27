@@ -149,35 +149,21 @@ public class JsonUtil {
 
     public static GestoreCategorie leggiCategorie(String json) {
         GestoreCategorie gestore = new GestoreCategorie();
-        // Parsing molto semplificato basato su regex per trovare blocchi
 
-        // 1. Estrai Categorie (partendo dalle radici)
-        // Siccome estraiListaCategorie in questo parser molto grezzo fa fatica con la
-        // ricorsione nidificata delle {},
-        // usiamo un trucco per parsing custom oppure dobbiamo migliorare il parser
-        // manuale.
-        // Dato che ci è richiesto zero-dependency, proviamo ad affidarci a un parsing
-        // più robusto per l'albero.
+        // 1. Estrai Campi Comuni PRIMA delle categorie, così il gestore li conosce già
+        List<Campo> commons = estraiListaCampi(estraiBlocco(json, "campiComuni"));
+        for (Campo c : commons) {
+            gestore.aggiungiCampoComune(c);
+        }
 
-        List<Categoria> categorieRadice = estraiAlberoCategorie(estraiBlocco(json, "categorie"));
+        // 2. Estrai Categorie (partendo dalle radici)
+        List<Categoria> categorieRadice = estraiAlberoCategorie(estraiBlocco(json, "categorie"), gestore);
         for (Categoria c : categorieRadice) {
             try {
-                // Aggiungiamo partendo dalla radice. Il metodo nel gestore gestisce già
-                // l'albero
-                // Modifichiamo il gestore temporaneamente per aggiungere la radice, poi
-                // aggiungiamo ricorsivamente i figli
                 gestore.aggiungiCategoria(c);
                 aggiungiSottocategorieRicorsive(gestore, c);
             } catch (Exception e) {
             }
-        }
-
-        // 2. Estrai Campi Comuni (Campi Base sono hardcoded nel costruttore, ma
-        // potremmo sovrascriverli se volessimo)
-        // Per ora leggiamo solo i Comuni aggiuntivi
-        List<Campo> commons = estraiListaCampi(estraiBlocco(json, "campiComuni"));
-        for (Campo c : commons) {
-            gestore.aggiungiCampoComune(c);
         }
 
         return gestore;
@@ -224,7 +210,7 @@ public class JsonUtil {
     }
 
     // Nuova implementazione per supportare alberi gerarchici
-    private static List<Categoria> estraiAlberoCategorie(String arrayContent) {
+    private static List<Categoria> estraiAlberoCategorie(String arrayContent, GestoreCategorie gestore) {
         List<Categoria> list = new ArrayList<>();
         if (arrayContent == null || arrayContent.trim().isEmpty())
             return list;
@@ -239,17 +225,38 @@ public class JsonUtil {
                 // Campi specifici
                 String campiContent = estraiBlocco(b, "campi");
                 List<Campo> campi = estraiListaCampi(campiContent);
+                
+                // Forza l'ordine: prima i Campi Base
+                for (Campo base : gestore.getCampiBase()) {
+                    for (Campo salvato : campi) {
+                        if (salvato.getNome().equals(base.getNome())) {
+                            c.aggiungiCampo(salvato);
+                            break;
+                        }
+                    }
+                }
+                // Poi i Campi Comuni
+                for (Campo comune : gestore.getCampiComuni()) {
+                    for (Campo salvato : campi) {
+                        if (salvato.getNome().equals(comune.getNome())) {
+                            c.aggiungiCampo(salvato);
+                            break;
+                        }
+                    }
+                }
+                // Poi eventuali altri campi specifici della categoria
                 for (Campo cmp : campi) {
                     try {
                         c.aggiungiCampo(cmp);
                     } catch (Exception e) {
+                        // Ignorato se già aggiunto
                     }
                 }
 
                 // Sottocategorie
                 String subContent = estraiBlocco(b, "sottocategorie");
                 if (subContent != null && !subContent.trim().isEmpty()) {
-                    List<Categoria> subs = estraiAlberoCategorie(subContent);
+                    List<Categoria> subs = estraiAlberoCategorie(subContent, gestore);
                     for (Categoria sub : subs) {
                         try {
                             c.aggiungiSottocategoria(sub);

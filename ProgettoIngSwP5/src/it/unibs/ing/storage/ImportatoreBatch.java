@@ -136,7 +136,7 @@ public class ImportatoreBatch {
         try {
             tipo = TipoCampo.valueOf(tipoStr);
         } catch (IllegalArgumentException e) {
-            errore("Tipo campo sconosciuto: '" + tipoStr + "'. Valori validi: STRINGA, INTERO, BOOLEANO, DATA, ORA");
+            errore("Tipo campo sconosciuto: '" + tipoStr + "'. Valori validi: STRINGA, INTERO, BOOLEANO, DATA, ORA, DOUBLE");
             return;
         }
         try {

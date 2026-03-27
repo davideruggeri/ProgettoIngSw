@@ -645,12 +645,12 @@ public class MainCLI {
             GestoreFile.salvaCategorie(gestoreCategorie, FILE_DATI);
             GestoreFile.salvaUtenti(gestoreSessione.getUtenti(), FILE_UTENTI);
 
-            // Per le proposte, estraiamo solo quelle attualmente in Bacheca (APERTE)
-            List<Proposta> bacheca = new java.util.ArrayList<>();
+            // Salviamo l'intero storico delle proposte (aperte, concluse, annullate, ecc.)
+            List<Proposta> proposteDaSalvare = new java.util.ArrayList<>();
             for (List<Proposta> lista : gestoreProposte.getBacheca().getTutteLeProposte().values()) {
-                bacheca.addAll(lista);
+                proposteDaSalvare.addAll(lista);
             }
-            GestoreFile.salvaProposte(bacheca, FILE_PROPOSTE);
+            GestoreFile.salvaProposte(proposteDaSalvare, FILE_PROPOSTE);
 
             vista.stampaMessaggio("Dati salvati correttamente.");
         } catch (IOException e) {

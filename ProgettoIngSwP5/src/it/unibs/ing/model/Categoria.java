@@ -2,7 +2,7 @@ package it.unibs.ing.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +34,7 @@ public class Categoria implements Serializable {
 
         this.nome = nome;
         this.descrizione = descrizione;
-        this.campi = new HashMap<>(); // Inizializza la mappa dei campi vuota
+        this.campi = new LinkedHashMap<>(); // Inizializza la mappa dei campi vuota (mantiene ordine)
         this.sottocategorie = new ArrayList<>();
         this.padre = null;
     }
@@ -72,7 +72,7 @@ public class Categoria implements Serializable {
      * @return Mappa dei campi.
      */
     public Map<String, Campo> getCampi() {
-        return new HashMap<>(campi);
+        return new LinkedHashMap<>(campi);
     }
 
     public Campo getCampo(String nome) {

@@ -12,7 +12,6 @@ import it.unibs.ing.model.Fruitore;
 import it.unibs.ing.model.Utente;
 import it.unibs.ing.storage.GestoreFile;
 import it.unibs.ing.storage.ImportatoreBatch;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -591,7 +590,7 @@ public class MainCLI {
                 String descCampo = vista.leggiStringa("Descrizione Campo");
                 boolean obbligatorio = vista.leggiBooleano("È obbligatorio?");
 
-                vista.stampaMessaggio("Tipi: 0=STRINGA, 1=INTERO, 2=BOOLEANO, 3=DATA, 4=ORA");
+                vista.stampaMessaggio("Tipi: 0=STRINGA, 1=INTERO, 2=BOOLEANO, 3=DATA, 4=ORA, 5=DOUBLE");
                 int idxTipo = vista.leggiIntero("Tipo Campo");
                 try {
                     TipoCampo tipo = TipoCampo.values()[Math.min(Math.max(0, idxTipo), TipoCampo.values().length - 1)];
@@ -621,7 +620,7 @@ public class MainCLI {
         String descCampo = vista.leggiStringa("Descrizione Campo");
         boolean obbligatorio = vista.leggiBooleano("È obbligatorio?");
 
-        vista.stampaMessaggio("Tipi: 0=STRINGA, 1=INTERO, 2=BOOLEANO, 3=DATA, 4=ORA");
+        vista.stampaMessaggio("Tipi: 0=STRINGA, 1=INTERO, 2=BOOLEANO, 3=DATA, 4=ORA, 5=DOUBLE");
         int idxTipo = vista.leggiIntero("Tipo Campo");
         TipoCampo tipo = TipoCampo.values()[Math.min(Math.max(0, idxTipo), TipoCampo.values().length - 1)];
 
@@ -716,12 +715,12 @@ public class MainCLI {
             GestoreFile.salvaCategorie(gestoreCategorie, FILE_DATI);
             GestoreFile.salvaUtenti(gestoreSessione.getUtenti(), FILE_UTENTI);
 
-            // Per le proposte, estraiamo solo quelle attualmente in Bacheca (APERTE)
-            List<Proposta> bacheca = new java.util.ArrayList<>();
+            // Salviamo l'intero storico delle proposte (aperte, concluse, annullate, ecc.)
+            List<Proposta> proposteDaSalvare = new java.util.ArrayList<>();
             for (List<Proposta> lista : gestoreProposte.getBacheca().getTutteLeProposte().values()) {
-                bacheca.addAll(lista);
+                proposteDaSalvare.addAll(lista);
             }
-            GestoreFile.salvaProposte(bacheca, FILE_PROPOSTE);
+            GestoreFile.salvaProposte(proposteDaSalvare, FILE_PROPOSTE);
 
             vista.stampaMessaggio("Dati salvati correttamente.");
         } catch (IOException e) {

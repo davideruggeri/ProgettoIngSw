@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +20,7 @@ public class Proposta implements Observable {
 
     public Proposta(Categoria categoria) {
         this.categoria = categoria;
-        this.valoriCampi = new HashMap<>();
+        this.valoriCampi = new LinkedHashMap<>();
         this.stato = null; // Stato iniziale nullo finché non validata o impostata diversamente
         this.iscritti = new ArrayList<>();
         this.observers = new ArrayList<>();

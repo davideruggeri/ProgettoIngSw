@@ -50,7 +50,7 @@ public class GestoreCategorie implements Serializable {
         base.add(new Campo("Luogo", "Indirizzo o luogo di ritrovo", true, TipoCampo.STRINGA));
         base.add(new Campo("Data", "Data di svolgimento o inizio", true, TipoCampo.DATA));
         base.add(new Campo("Ora", "Ora di ritrovo", true, TipoCampo.ORA));
-        base.add(new Campo("Quota individuale", "Spesa prevista per partecipante", true, TipoCampo.INTERO));
+        base.add(new Campo("Quota individuale", "Spesa prevista per partecipante", true, TipoCampo.DOUBLE));
         base.add(new Campo("Data conclusiva", "Data di conclusione iniziativa", true, TipoCampo.DATA));
         return base;
     }
