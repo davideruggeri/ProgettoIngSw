@@ -6,9 +6,6 @@ import it.unibs.ing.controller.GestoreCategorie;
 import java.util.List;
 import it.unibs.ing.model.Utente;
 
-/**
- * Utility per il salvataggio e caricamento di oggetti su file JSON.
- */
 public class GestoreFile {
 
     public static void salvaCategorie(GestoreCategorie gestore, String nomeFile) throws IOException {

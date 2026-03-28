@@ -11,20 +11,12 @@ import it.unibs.ing.controller.GestoreCategorie;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Classe di utilità per convertire gli oggetti del dominio in formato JSON e
- * viceversa.
- * Implementazione manuale "naive" per evitare dipendenze esterne.
- */
 public class JsonUtil {
-
-    // --- WRITER ---
 
     public static String scriviCategorie(GestoreCategorie gestore) {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");
 
-        // Categorie (salviamo solo le radici, le sottocategorie saranno annidate)
         sb.append("  \"categorie\": [\n");
         int i = 0;
         List<Categoria> radici = gestore.getCategorieRadice();
@@ -38,12 +30,10 @@ public class JsonUtil {
         }
         sb.append("  ],\n");
 
-        // Campi Base
         sb.append("  \"campiBase\": ");
         sb.append(scriviListaCampi(gestore.getCampiBase(), "  "));
         sb.append(",\n");
 
-        // Campi Comuni
         sb.append("  \"campiComuni\": ");
         sb.append(scriviListaCampi(gestore.getCampiComuni(), "  "));
 
@@ -60,7 +50,6 @@ public class JsonUtil {
         sb.append(indent).append("  \"campi\": ")
                 .append(scriviListaCampi(new ArrayList<>(c.getCampi().values()), indent + "  "));
 
-        // Sottocategorie ricorsive
         if (!c.getSottocategorie().isEmpty()) {
             sb.append(",\n").append(indent).append("  \"sottocategorie\": [\n");
             int i = 0;
@@ -75,7 +64,7 @@ public class JsonUtil {
             }
             sb.append(indent).append("  ]\n");
         } else {
-            sb.append("\n"); // chiusura dopo campi
+            sb.append("\n");
         }
 
         sb.append(indent).append("}");
@@ -131,36 +120,18 @@ public class JsonUtil {
         return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
     }
 
-    // --- READER ---
-
     public static GestoreCategorie leggiCategorie(String json) {
         GestoreCategorie gestore = new GestoreCategorie();
-        // Parsing molto semplificato basato su regex per trovare blocchi
-
-        // 1. Estrai Categorie (partendo dalle radici)
-        // Siccome estraiListaCategorie in questo parser molto grezzo fa fatica con la
-        // ricorsione nidificata delle {},
-        // usiamo un trucco per parsing custom oppure dobbiamo migliorare il parser
-        // manuale.
-        // Dato che ci è richiesto zero-dependency, proviamo ad affidarci a un parsing
-        // più robusto per l'albero.
 
         List<Categoria> categorieRadice = estraiAlberoCategorie(estraiBlocco(json, "categorie"));
         for (Categoria c : categorieRadice) {
             try {
-                // Aggiungiamo partendo dalla radice. Il metodo nel gestore gestisce già
-                // l'albero
-                // Modifichiamo il gestore temporaneamente per aggiungere la radice, poi
-                // aggiungiamo ricorsivamente i figli
                 gestore.aggiungiCategoria(c);
                 aggiungiSottocategorieRicorsive(gestore, c);
             } catch (Exception e) {
             }
         }
 
-        // 2. Estrai Campi Comuni (Campi Base sono hardcoded nel costruttore, ma
-        // potremmo sovrascriverli se volessimo)
-        // Per ora leggiamo solo i Comuni aggiuntivi
         List<Campo> commons = estraiListaCampi(estraiBlocco(json, "campiComuni"));
         for (Campo c : commons) {
             gestore.aggiungiCampoComune(c);
@@ -189,8 +160,6 @@ public class JsonUtil {
         return utenti;
     }
 
-    // --- HELPER DI PARSING ---
-
     private static void aggiungiSottocategorieRicorsive(GestoreCategorie gestore, Categoria padre) {
         for (Categoria sub : padre.getSottocategorie()) {
             try {
@@ -201,7 +170,6 @@ public class JsonUtil {
         }
     }
 
-    // Nuova implementazione per supportare alberi gerarchici
     private static List<Categoria> estraiAlberoCategorie(String arrayContent) {
         List<Categoria> list = new ArrayList<>();
         if (arrayContent == null || arrayContent.trim().isEmpty())
@@ -214,7 +182,6 @@ public class JsonUtil {
             if (nome != null) {
                 Categoria c = new Categoria(nome, desc != null ? desc : "");
 
-                // Campi specifici
                 String campiContent = estraiBlocco(b, "campi");
                 List<Campo> campi = estraiListaCampi(campiContent);
                 for (Campo cmp : campi) {
@@ -224,7 +191,6 @@ public class JsonUtil {
                     }
                 }
 
-                // Sottocategorie
                 String subContent = estraiBlocco(b, "sottocategorie");
                 if (subContent != null && !subContent.trim().isEmpty()) {
                     List<Categoria> subs = estraiAlberoCategorie(subContent);
@@ -263,7 +229,6 @@ public class JsonUtil {
         return list;
     }
 
-    // Trova il contenuto dentro "key": [ ... ] oppure "key": { ... }
     private static String estraiBlocco(String json, String key) {
         int startKey = json.indexOf("\"" + key + "\"");
         if (startKey == -1)
@@ -303,8 +268,6 @@ public class JsonUtil {
         return null;
     }
 
-    // Versione migliorata di estraiOggetti che ignora gli oggetti annidati
-    // (top-level only)
     private static List<String> estraiOggettiTopLevel(String content) {
         List<String> oggetti = new ArrayList<>();
         if (content == null)
@@ -337,7 +300,6 @@ public class JsonUtil {
         int startSep = oggetto.indexOf(":", startKey);
         int startVal = startSep + 1;
 
-        // Skip whitespace
         while (startVal < oggetto.length() && Character.isWhitespace(oggetto.charAt(startVal))) {
             startVal++;
         }
@@ -347,15 +309,12 @@ public class JsonUtil {
 
         char firstChar = oggetto.charAt(startVal);
         if (firstChar == '\"') {
-            // Stringa
             int endVal = oggetto.indexOf("\"", startVal + 1);
-            // Gestione escape semplice
             while (endVal > 0 && oggetto.charAt(endVal - 1) == '\\') {
                 endVal = oggetto.indexOf("\"", endVal + 1);
             }
             return oggetto.substring(startVal + 1, endVal);
         } else {
-            // Booleano o numero (fino a virgola o fine)
             int endVal = startVal;
             while (endVal < oggetto.length() && oggetto.charAt(endVal) != ',' && oggetto.charAt(endVal) != '}') {
                 endVal++;

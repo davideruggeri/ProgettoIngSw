@@ -10,10 +10,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
-/**
- * Controller per la gestione logica delle proposte di iniziativa
- * e dell'interazione con la Bacheca e Archivio.
- */
 public class GestoreProposte {
     private Bacheca bacheca;
 
@@ -33,20 +29,13 @@ public class GestoreProposte {
         return bacheca;
     }
 
-    /**
-     * Tenta di validare una proposta. Se non è valida, lancia eccezione.
-     * Altrimenti lo stato interno della proposta verrà settato a VALIDA.
-     */
     public boolean validaProposta(Proposta proposta) {
         return proposta.verificaValidita();
     }
 
-    /**
-     * Pubblica una proposta valida in bacheca.
-     */
     public void pubblicaProposta(Proposta proposta) {
         try {
-            proposta.pubblica(); // Passa a stato APERTA, throws exception se non valida
+            proposta.pubblica();
             bacheca.aggiungiPropostaAperta(proposta);
         } catch (Exception e) {
             throw new IllegalArgumentException("Errore durante la pubblicazione: " + e.getMessage());
@@ -62,18 +51,10 @@ public class GestoreProposte {
         }
     }
 
-    /**
-     * Algoritmo schedulato (invocato al login) che verifica tutte le proposte.
-     * Cambia lo stato a CONFERMATA/ANNULLATA se scade il termine di iscrizione.
-     * Cambia lo stato a CONCLUSA se è passata la data conclusiva di un evento
-     * confermato.
-     * Invia le notifiche nell'area personale dei Fruitori.
-     */
     public void controllaScadenze(GestoreSessione sessione) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDate oggi = LocalDate.now();
 
-        // Iteriamo su tutte le proposte per aggiornare gli stati
         for (List<Proposta> lista : bacheca.getTutteLeProposte().values()) {
             for (Proposta p : lista) {
                 try {
@@ -108,7 +89,7 @@ public class GestoreProposte {
                         }
                     }
                 } catch (DateTimeParseException ignored) {
-                    // Dati incorretti salvati precedentemente
+
                 }
             }
         }

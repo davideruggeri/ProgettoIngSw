@@ -5,23 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Gestisce l'archivio delle proposte e la bacheca.
- * La bacheca contiene solo proposte in stato APERTA, mentre
- * l'archivio conterrà storicamente anche le altre.
- */
 public class Bacheca {
 
-    // Salviamo tutte le proposte, indicizzate per categoria per comodità
     private Map<String, List<Proposta>> propostePerCategoria;
 
     public Bacheca() {
         this.propostePerCategoria = new HashMap<>();
     }
 
-    /**
-     * Aggiunge una proposta alla bacheca, ma solo se è aperta.
-     */
     public void aggiungiPropostaAperta(Proposta p) {
         if (p.getStato() == StatoProposta.APERTA) {
             String nomeCat = p.getCategoria().getNome();
@@ -32,9 +23,6 @@ public class Bacheca {
         }
     }
 
-    /**
-     * Ritorna tutte le proposte attualmente in bacheca per una data categoria.
-     */
     public List<Proposta> getProposteApertePerCategoria(String nomeCategoria) {
         return propostePerCategoria.getOrDefault(nomeCategoria, new ArrayList<>());
     }

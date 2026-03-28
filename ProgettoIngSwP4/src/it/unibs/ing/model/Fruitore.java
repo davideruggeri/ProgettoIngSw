@@ -3,21 +3,11 @@ package it.unibs.ing.model;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Rappresenta l'utente Fruitore (utilizzatore finale).
- * Questo ruolo ha i permessi per visualizzare le Categorie e partecipare.
- */
 public class Fruitore extends Utente implements Observer {
     private static final long serialVersionUID = 1L;
 
     private List<String> notifiche;
 
-    /**
-     * Crea un nuovo Fruitore.
-     * 
-     * @param nomeUtente Nome utente.
-     * @param password   Password.
-     */
     public Fruitore(String nomeUtente, String password) {
         super(nomeUtente, password);
         this.notifiche = new ArrayList<>();

@@ -9,11 +9,6 @@ import it.unibs.ing.storage.GestoreFile;
 
 import java.io.IOException;
 
-/**
- * Classe principale del programma.
- * Gestisce il flusso dell'applicazione e le interazioni principali con l'utente
- * (Menu).
- */
 public class MainCLI {
 
     private static final String FILE_DATI = "data/categorie.json";
@@ -28,10 +23,6 @@ public class MainCLI {
         caricaDati();
     }
 
-    /**
-     * Carica i dati salvati all'avvio dell'applicazione.
-     * Se non trova dati, inizializza un nuovo sistema vuoto.
-     */
     private void caricaDati() {
         try {
             this.gestoreCategorie = GestoreFile.caricaCategorie(FILE_DATI);
@@ -51,11 +42,6 @@ public class MainCLI {
         }
     }
 
-    // ... (methods run, loopLogin, etc. remain unchanged)
-
-    /**
-     * Metodo principale di esecuzione del loop dell'applicazione.
-     */
     public void run() {
         boolean inEsecuzione = true;
         while (inEsecuzione) {
@@ -65,7 +51,6 @@ public class MainCLI {
                 if (gestoreSessione.isConfiguratore()) {
                     inEsecuzione = menuConfiguratore();
                 } else {
-                    // Logica per altri utenti (future versioni)
                     gestoreSessione.logout();
                 }
             }
@@ -73,9 +58,6 @@ public class MainCLI {
         salvaDati();
     }
 
-    /**
-     * Gestisce il processo di autenticazione.
-     */
     private void loopLogin() {
         vista.stampaMessaggio("\n--- LOGIN ---");
         String nomeUtente = vista.leggiStringa("Nome Utente");
@@ -84,7 +66,6 @@ public class MainCLI {
         if (gestoreSessione.login(nomeUtente, password)) {
             vista.stampaMessaggio("Benvenuto, " + nomeUtente + "!");
 
-            // Controllo Primo Accesso (Password di default "admin")
             if (password.equals("admin") && gestoreSessione.isConfiguratore()) {
                 vista.stampaMessaggio("ATTENZIONE: Primo accesso rilevato. È necessario cambiare la password.");
                 boolean cambioAvvenuto = false;
@@ -110,12 +91,6 @@ public class MainCLI {
         }
     }
 
-    /**
-     * Mostra il menu dedicato al Configuratore e gestisce le scelte.
-     * 
-     * @return true se l'applicazione deve continuare, false se l'utente sceglie di
-     *         uscire.
-     */
     private boolean menuConfiguratore() {
         vista.stampaMessaggio("\n--- MENU CONFIGURATORE ---");
         vista.stampaMessaggio("1. Visualizza Categorie");
@@ -148,7 +123,7 @@ public class MainCLI {
                 gestoreSessione.logout();
                 break;
             case 7:
-                return false; // Esci
+                return false; 
             default:
                 vista.stampaMessaggio("Scelta non valida.");
         }
@@ -176,16 +151,12 @@ public class MainCLI {
         }
     }
 
-    /**
-     * Gestisce il flusso di creazione di una nuova categoria.
-     */
     private void creaCategoria() {
         String nome = vista.leggiStringa("Nome Categoria");
         String descrizione = vista.leggiStringa("Descrizione");
 
         Categoria nuovaCategoria = new Categoria(nome, descrizione);
 
-        // Scelta padre
         String nomePadre = null;
         if (!gestoreCategorie.getCategorie().isEmpty()
                 && vista.leggiBooleano("Questa categoria è una Sottocategoria di un'altra esistente?")) {
@@ -226,9 +197,6 @@ public class MainCLI {
         }
     }
 
-    /**
-     * Permette di aggiungere un nuovo campo comune a tutte le categorie.
-     */
     private void aggiungiCampoComune() {
         vista.stampaMessaggio("\n--- NUOVO CAMPO COMUNE ---");
         String nomeCampo = vista.leggiStringa("Nome Campo");
@@ -248,9 +216,6 @@ public class MainCLI {
         }
     }
 
-    /**
-     * Rimuove una categoria esistente.
-     */
     private void rimuoviCategoria() {
         String nome = vista.leggiStringa("Nome della categoria da rimuovere");
         if (gestoreCategorie.getCategoria(nome) != null) {
@@ -263,9 +228,6 @@ public class MainCLI {
         }
     }
 
-    /**
-     * Gestisce la modifica di una categoria esistente.
-     */
     private void modificaCategoria() {
         String nomeCategoria = vista.leggiStringa("Inserisci il nome della categoria da modificare");
         Categoria categoria = gestoreCategorie.getCategoria(nomeCategoria);
@@ -322,9 +284,6 @@ public class MainCLI {
         }
     }
 
-    /**
-     * Salva lo stato corrente del sistema su file.
-     */
     private void salvaDati() {
         try {
             GestoreFile.salvaCategorie(gestoreCategorie, FILE_DATI);

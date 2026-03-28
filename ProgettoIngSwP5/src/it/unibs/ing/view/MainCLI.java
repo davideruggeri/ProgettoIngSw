@@ -16,11 +16,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Classe principale del programma.
- * Gestisce il flusso dell'applicazione e le interazioni principali con l'utente
- * (Menu).
- */
 public class MainCLI {
 
     private static final String FILE_DATI = "data/categorie.json";
@@ -38,10 +33,6 @@ public class MainCLI {
         caricaDati();
     }
 
-    /**
-     * Carica i dati salvati all'avvio dell'applicazione.
-     * Se non trova dati, inizializza un nuovo sistema vuoto.
-     */
     private void caricaDati() {
         try {
             this.gestoreCategorie = GestoreFile.caricaCategorie(FILE_DATI);
@@ -63,9 +54,7 @@ public class MainCLI {
         try {
             List<Proposta> proposteCaricate = GestoreFile.caricaProposte(FILE_PROPOSTE, gestoreCategorie);
             for (Proposta p : proposteCaricate) {
-                // Le proposte caricate sono già state scartate se non erano APERTE al
-                // salvataggio.
-                // Le rimettiamo in bacheca forzatamente.
+
                 gestoreProposte.getBacheca().aggiungiPropostaAperta(p);
             }
             vista.stampaMessaggio("Proposte in bacheca caricate (" + proposteCaricate.size() + ").");
@@ -74,11 +63,6 @@ public class MainCLI {
         }
     }
 
-    // ... (methods run, loopLogin, etc. remain unchanged)
-
-    /**
-     * Metodo principale di esecuzione del loop dell'applicazione.
-     */
     public void run() {
         boolean inEsecuzione = true;
         while (inEsecuzione) {
@@ -97,9 +81,6 @@ public class MainCLI {
         salvaDati();
     }
 
-    /**
-     * Gestisce il processo di autenticazione.
-     */
     private void loopLogin() {
         vista.stampaMessaggio("\n--- LOGIN ---");
         String nomeUtente = vista.leggiStringa("Nome Utente");
@@ -108,7 +89,6 @@ public class MainCLI {
         if (gestoreSessione.login(nomeUtente, password)) {
             vista.stampaMessaggio("Benvenuto, " + nomeUtente + "!");
 
-            // Controllo Primo Accesso (Password di default "admin")
             if (password.equals("admin") && gestoreSessione.isConfiguratore()) {
                 vista.stampaMessaggio("ATTENZIONE: Primo accesso rilevato. È necessario cambiare la password.");
                 boolean cambioAvvenuto = false;
@@ -142,12 +122,6 @@ public class MainCLI {
         }
     }
 
-    /**
-     * Mostra il menu dedicato al Configuratore e gestisce le scelte.
-     * 
-     * @return true se l'applicazione deve continuare, false se l'utente sceglie di
-     *         uscire.
-     */
     private boolean menuConfiguratore() {
         vista.stampaMessaggio("\n--- MENU CONFIGURATORE ---");
         vista.stampaMessaggio("1. Visualizza Categorie");
@@ -199,10 +173,6 @@ public class MainCLI {
         String pathFile = vista.leggiStringa("Percorso del file batch (es. data/batch.txt)");
         new ImportatoreBatch(pathFile, gestoreCategorie, gestoreProposte).esegui();
     }
-
-    // =========================================================
-    // --- MENU FRUITORE (V3) ---
-    // =========================================================
 
     private boolean menuFruitore() {
         vista.stampaMessaggio("\n--- MENU FRUITORE ---");
@@ -267,9 +237,6 @@ public class MainCLI {
         if (idx >= 0 && idx < mieIscrizioni.size()) {
             Proposta p = mieIscrizioni.get(idx);
 
-            // Check opzionale: se lo stato è APERTA in teoria siamo già entro la data
-            // limite,
-            // ma verifichiamo la data di "Termine ultimo di iscrizione" per certezza V4
             String scadenzaStr = p.getValore("Termine ultimo di iscrizione");
             if (scadenzaStr != null) {
                 try {
@@ -286,7 +253,7 @@ public class MainCLI {
             }
 
             if (p.rimuoviIscritto(mioUsername)) {
-                p.removeObserver(f); // Togliamo l'observer dal design pattern
+                p.removeObserver(f);
                 vista.stampaMessaggio("Iscrizione ritirata con successo.");
             } else {
                 vista.stampaMessaggio("Errore nel ritiro dell'iscrizione.");
@@ -353,13 +320,6 @@ public class MainCLI {
         }
     }
 
-    // =========================================================
-    // --- GESTIONE PROPOSTE (V2) ---
-    // =========================================================
-
-    /**
-     * Sottomenu per la gestione delle proposte di iniziativa.
-     */
     private void menuProposte() {
         boolean continua = true;
         while (continua) {
@@ -393,17 +353,12 @@ public class MainCLI {
         }
     }
 
-    /**
-     * Flusso di creazione di una nuova proposta:
-     * seleziona categoria -> compila campi -> valida.
-     */
     private void creaProposta() {
         if (gestoreCategorie.getCategorie().isEmpty()) {
             vista.stampaMessaggio("Nessuna categoria disponibile. Crea prima una categoria.");
             return;
         }
 
-        // 1. Selezione categoria
         vista.stampaMessaggio("\n--- CATEGORIE DISPONIBILI ---");
         for (Categoria c : gestoreCategorie.getCategorieRadice()) {
             stampaCategoriaRicorsiva(c, "");
@@ -415,7 +370,6 @@ public class MainCLI {
             return;
         }
 
-        // 2. Compilazione campi
         Proposta proposta = new Proposta(categoria);
         vista.stampaMessaggio("\nCompila i campi per la categoria '" + categoria.getNome() + "':");
         vista.stampaMessaggio("(Per i campi di tipo DATA usa il formato dd/MM/yyyy, per ORA usa HH:mm)");
@@ -430,11 +384,9 @@ public class MainCLI {
             }
         }
 
-        // 3. Validazione
         if (gestoreProposte.validaProposta(proposta)) {
-            gestoreProposte.getBacheca(); // assicura bacheca inizializzata
-            // Teniamo la proposta in una lista locale per poterla poi pubblicare
-            // La aggiungiamo alla bacheca interna del gestore come "in attesa"
+            gestoreProposte.getBacheca();
+
             vista.stampaMessaggio("\nProposta VALIDA! Puoi pubblicarla con l'opzione 'Pubblica una Proposta'.");
             if (vista.leggiBooleano("Vuoi pubblicarla subito in bacheca?")) {
                 try {
@@ -454,30 +406,20 @@ public class MainCLI {
         }
     }
 
-    /**
-     * Permette di pubblicare in bacheca una proposta già valida.
-     * In questa versione semplificata, chiede di ricreare la proposta
-     * (le proposte non ancora pubblicate non sopravvivono alla chiusura).
-     */
     private void pubblicaProposta() {
         Bacheca bacheca = gestoreProposte.getBacheca();
         Map<String, List<Proposta>> tutte = bacheca.getTutteLeProposte();
 
-        // Mostra le proposte già in bacheca
         if (tutte.isEmpty()) {
             vista.stampaMessaggio(
                     "Nessuna proposta in bacheca. Crea e pubblica una proposta dalla voce 'Crea Nuova Proposta'.");
             return;
         }
 
-        // Se ci sono già proposte aperte le mostra
         vista.stampaMessaggio("\n--- PROPOSTE IN BACHECA ---");
         visualizzaBacheca();
     }
 
-    /**
-     * Mostra tutte le proposte attualmente pubblicate in bacheca.
-     */
     private void visualizzaBacheca() {
         Bacheca bacheca = gestoreProposte.getBacheca();
         Map<String, List<Proposta>> tutte = bacheca.getTutteLeProposte();
@@ -561,16 +503,12 @@ public class MainCLI {
         }
     }
 
-    /**
-     * Gestisce il flusso di creazione di una nuova categoria.
-     */
     private void creaCategoria() {
         String nome = vista.leggiStringa("Nome Categoria");
         String descrizione = vista.leggiStringa("Descrizione");
 
         Categoria nuovaCategoria = new Categoria(nome, descrizione);
 
-        // Scelta padre
         String nomePadre = null;
         if (!gestoreCategorie.getCategorie().isEmpty()
                 && vista.leggiBooleano("Questa categoria è una Sottocategoria di un'altra esistente?")) {
@@ -611,9 +549,6 @@ public class MainCLI {
         }
     }
 
-    /**
-     * Permette di aggiungere un nuovo campo comune a tutte le categorie.
-     */
     private void aggiungiCampoComune() {
         vista.stampaMessaggio("\n--- NUOVO CAMPO COMUNE ---");
         String nomeCampo = vista.leggiStringa("Nome Campo");
@@ -633,9 +568,6 @@ public class MainCLI {
         }
     }
 
-    /**
-     * Rimuove una categoria esistente.
-     */
     private void rimuoviCategoria() {
         String nome = vista.leggiStringa("Nome della categoria da rimuovere");
         if (gestoreCategorie.getCategoria(nome) != null) {
@@ -648,9 +580,6 @@ public class MainCLI {
         }
     }
 
-    /**
-     * Gestisce la modifica di una categoria esistente.
-     */
     private void modificaCategoria() {
         String nomeCategoria = vista.leggiStringa("Inserisci il nome della categoria da modificare");
         Categoria categoria = gestoreCategorie.getCategoria(nomeCategoria);
@@ -707,15 +636,11 @@ public class MainCLI {
         }
     }
 
-    /**
-     * Salva lo stato corrente del sistema su file.
-     */
     private void salvaDati() {
         try {
             GestoreFile.salvaCategorie(gestoreCategorie, FILE_DATI);
             GestoreFile.salvaUtenti(gestoreSessione.getUtenti(), FILE_UTENTI);
 
-            // Salviamo l'intero storico delle proposte (aperte, concluse, annullate, ecc.)
             List<Proposta> proposteDaSalvare = new java.util.ArrayList<>();
             for (List<Proposta> lista : gestoreProposte.getBacheca().getTutteLeProposte().values()) {
                 proposteDaSalvare.addAll(lista);
@@ -730,7 +655,7 @@ public class MainCLI {
 
     public static void main(String[] args) {
         MainCLI app = new MainCLI();
-        // V5: se viene passato un file batch come argomento, lo elabora prima del loop
+
         if (args.length > 0) {
             new ImportatoreBatch(args[0], app.gestoreCategorie, app.gestoreProposte).esegui();
         }

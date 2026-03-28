@@ -6,48 +6,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Rappresenta una Categoria di eventi (es. "Partita di Calcio", "Concerto").
- * Una categoria definisce quali informazioni (Campi) sono necessarie per creare
- * un evento di quel tipo.
- */
 public class Categoria implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String nome;
     private String descrizione;
-    // Mappa dei campi definiti per questa categoria (NomeCampo -> OggettoCampo)
     private Map<String, Campo> campi;
 
-    // Gestione Gerarchia
     private Categoria padre;
     private List<Categoria> sottocategorie;
 
-    /**
-     * Crea una nuova Categoria.
-     * 
-     * @param nome        Nome della categoria (es. "Sport").
-     * @param descrizione Descrizione della categoria.
-     */
     public Categoria(String nome, String descrizione) {
         assert nome != null && !nome.isBlank() : "Il nome non può essere nullo o vuoto";
 
         this.nome = nome;
         this.descrizione = descrizione;
-        this.campi = new HashMap<>(); // Inizializza la mappa dei campi vuota
+        this.campi = new HashMap<>();
         this.sottocategorie = new ArrayList<>();
         this.padre = null;
     }
 
-    /**
-     * Aggiunge un nuovo campo alla definizione della categoria.
-     * 
-     * @param campo Il campo da aggiungere.
-     * @throws IllegalArgumentException se il campo esiste già o è nullo.
-     */
     public void aggiungiCampo(Campo campo) {
         assert campo != null : "Il campo non può essere nullo";
-        // Precondizione: Il nome del campo deve essere univoco nella categoria
         if (campi.containsKey(campo.getNome())) {
             throw new IllegalArgumentException("Campo già esistente: " + campo.getNome());
         }
@@ -66,11 +46,6 @@ public class Categoria implements Serializable {
         return descrizione;
     }
 
-    /**
-     * Restituisce una copia della mappa dei campi per preservare l'incapsulamento.
-     * 
-     * @return Mappa dei campi.
-     */
     public Map<String, Campo> getCampi() {
         return new HashMap<>(campi);
     }
@@ -79,7 +54,6 @@ public class Categoria implements Serializable {
         return campi.get(nome);
     }
 
-    // Metodi Gerarchia
     public Categoria getPadre() {
         return padre;
     }
@@ -92,14 +66,6 @@ public class Categoria implements Serializable {
         return new ArrayList<>(sottocategorie);
     }
 
-    /**
-     * Aggiunge una sottocategoria a questa categoria.
-     * Copia automaticamente i campi della categoria padre nella sottocategoria.
-     * 
-     * @param sottocategoria La sottocategoria da aggiungere.
-     * @throws IllegalArgumentException se la sottocategoria è nulla o esiste già
-     *                                  con lo stesso nome.
-     */
     public void aggiungiSottocategoria(Categoria sottocategoria) {
         assert sottocategoria != null : "La sottocategoria non può essere nulla";
 
@@ -109,17 +75,10 @@ public class Categoria implements Serializable {
             }
         }
 
-        // Eredita tutti i campi dal padre
         for (Campo c : this.campi.values()) {
             try {
-                // Creiamo una copia del campo per sicurezza, ma possiamo anche usare gli stessi
-                // riferimenti.
-                // In questo contesto, usando gli stessi riferimenti la modifica di un campo si
-                // riflette anche nei figli (se voluta).
-                // Per semplicità e sicurezza, aggiungiamo il riferimento.
                 sottocategoria.aggiungiCampo(c);
             } catch (IllegalArgumentException e) {
-                // Ignoriamo se il campo è già presente (es. aggiunto prima)
             }
         }
 
@@ -129,7 +88,7 @@ public class Categoria implements Serializable {
 
     public void rimuoviSottocategoria(Categoria sottocategoria) {
         this.sottocategorie.remove(sottocategoria);
-        sottocategoria.setPadre(null); // Orfana
+        sottocategoria.setPadre(null); 
     }
 
     @Override
@@ -141,7 +100,7 @@ public class Categoria implements Serializable {
             for (Categoria sub : sottocategorie) {
                 sb.append(sub.getNome()).append(", ");
             }
-            sb.setLength(sb.length() - 2); // Rimuovi ultima virgola e spazio
+            sb.setLength(sb.length() - 2);
             sb.append("\n");
         }
         return sb.toString();

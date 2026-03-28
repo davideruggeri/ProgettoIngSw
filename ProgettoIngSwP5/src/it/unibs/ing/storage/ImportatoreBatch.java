@@ -11,20 +11,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-/**
- * Importa massivamente dati (Categorie, Campi, Proposte) da un file di testo
- * batch.
- *
- * Formato righe supportate:
- * CREA_CATEGORIA;NomeCategoria;Descrizione[;NomeParent]
- * AGGIUNGI_CAMPO;NomeCategoria;NomeCampo;Descrizione;OBBLIGATORIO|OPZIONALE;TIPO
- * CREA_PROPOSTA;Categoria;Titolo;DataConclusiva;TermineIscrizione;Ora;Luogo;NumPartecipanti;Quota
- * PUBBLICA_PROPOSTA;Titolo
- * # commento (ignorato)
- * (riga vuota ignorata)
- *
- * TIPO può essere: STRINGA, INTERO, BOOLEANO, DATA, ORA
- */
 public class ImportatoreBatch {
 
     private final String filePath;
@@ -39,10 +25,6 @@ public class ImportatoreBatch {
         this.gestoreProposte = gestoreProposte;
     }
 
-    /**
-     * Processa il file batch riga per riga.
-     * Stampa un riepilogo al termine.
-     */
     public void esegui() {
         System.out.println("\n=== AVVIO IMPORTAZIONE BATCH (" + filePath + ") ===");
 
@@ -53,7 +35,7 @@ public class ImportatoreBatch {
                 numeroRiga++;
                 riga = riga.trim();
                 if (riga.isEmpty() || riga.startsWith("#")) {
-                    continue; // salta commenti e righe vuote
+                    continue;
                 }
                 System.out.print("Riga " + numeroRiga + ": ");
                 processaRiga(riga);
@@ -93,7 +75,6 @@ public class ImportatoreBatch {
         }
     }
 
-    // --- CREA_CATEGORIA;NomeCategoria;Descrizione[;NomeParent] ---
     private void creaCategoriaCmd(String[] parti) {
         if (parti.length < 3) {
             errore("CREA_CATEGORIA richiede almeno: Nome;Descrizione");
@@ -115,7 +96,6 @@ public class ImportatoreBatch {
         }
     }
 
-    // --- AGGIUNGI_CAMPO;NomeCat;NomeCampo;Descr;OBBLIGATORIO|OPZIONALE;TIPO ---
     private void aggiungiCampoCmd(String[] parti) {
         if (parti.length < 6) {
             errore("AGGIUNGI_CAMPO richiede: NomeCat;NomeCampo;Descr;OBBLIGATORIO|OPZIONALE;TIPO");
@@ -136,7 +116,8 @@ public class ImportatoreBatch {
         try {
             tipo = TipoCampo.valueOf(tipoStr);
         } catch (IllegalArgumentException e) {
-            errore("Tipo campo sconosciuto: '" + tipoStr + "'. Valori validi: STRINGA, INTERO, BOOLEANO, DATA, ORA, DOUBLE");
+            errore("Tipo campo sconosciuto: '" + tipoStr
+                    + "'. Valori validi: STRINGA, INTERO, BOOLEANO, DATA, ORA, DOUBLE");
             return;
         }
         try {
@@ -147,9 +128,6 @@ public class ImportatoreBatch {
         }
     }
 
-    // ---
-    // CREA_PROPOSTA;Cat;Titolo;DataConclusiva;TermineIscrizione;Ora;Luogo;NumPart;Quota
-    // ---
     private void creaPropostaCmd(String[] parti) {
         if (parti.length < 9) {
             errore("CREA_PROPOSTA richiede: Cat;Titolo;DataConclusiva;TermineIscrizione;Ora;Luogo;NumPart;Quota");
@@ -164,9 +142,6 @@ public class ImportatoreBatch {
         String numPart = parti[7].trim();
         String quota = parti[8].trim();
 
-        // Usiamo il campo "Data" come dataConclusiva (primo giorno dell'evento),
-        // DataConclusiva come data conclusiva.
-        // Formato atteso: dd/MM/yyyy per le date, HH:mm per le ore
         Categoria cat = gestoreCategorie.getCategoria(nomeCat);
         if (cat == null) {
             errore("Categoria '" + nomeCat + "' non trovata.");
@@ -181,16 +156,13 @@ public class ImportatoreBatch {
         p.impostaValore("Luogo", luogo);
         p.impostaValore("Numero di partecipanti", numPart);
         p.impostaValore("Quota individuale", quota);
-        // Data = stesso giorno di termineIscrizione + 2 giorni (o uguale a
-        // dataConclusiva se obbligatorio)
-        // Usiamo DataConclusiva anche come Data per semplicità batch
+
         p.impostaValore("Data", dataConcl);
 
         if (gestoreProposte.validaProposta(p)) {
-            // Salviamo la proposta come VALIDA per ora;
-            // si può pubblicare subito con PUBBLICA_PROPOSTA
-            gestoreProposte.getBacheca(); // assicura init
-            // La teniamo in una mappa temporanea nel gestore
+
+            gestoreProposte.getBacheca();
+
             gestoreProposte.getProposteValide().put(titolo, p);
             ok("Proposta '" + titolo + "' creata e VALIDA (usa PUBBLICA_PROPOSTA per pubblicarla).");
         } else {
@@ -198,7 +170,6 @@ public class ImportatoreBatch {
         }
     }
 
-    // --- PUBBLICA_PROPOSTA;Titolo ---
     private void pubblicaPropostaCmd(String[] parti) {
         if (parti.length < 2) {
             errore("PUBBLICA_PROPOSTA richiede: Titolo");

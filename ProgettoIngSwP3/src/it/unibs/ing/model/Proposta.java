@@ -8,9 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Rappresenta un'iniziativa proposta da un Configuratore.
- */
 public class Proposta implements Observable {
     private Categoria categoria;
     private Map<String, String> valoriCampi;
@@ -21,7 +18,7 @@ public class Proposta implements Observable {
     public Proposta(Categoria categoria) {
         this.categoria = categoria;
         this.valoriCampi = new HashMap<>();
-        this.stato = null; // Stato iniziale nullo finché non validata o impostata diversamente
+        this.stato = null;
         this.iscritti = new ArrayList<>();
         this.observers = new ArrayList<>();
     }
@@ -91,9 +88,6 @@ public class Proposta implements Observable {
         }
     }
 
-    /**
-     * @return true se c'è ancora posto, false se i posti sono esauriti.
-     */
     public boolean puoIscrivere() {
         try {
             int maxPartecipanti = Integer.parseInt(getValore("Numero di partecipanti"));
@@ -115,13 +109,8 @@ public class Proposta implements Observable {
         return iscritti.remove(usernameFruitore);
     }
 
-    /**
-     * Valida la proposta controllando i campi obbligatori e le date.
-     * 
-     * @return true se la proposta è valida, false altrimenti
-     */
     public boolean verificaValidita() {
-        // 1. Controllo campi obbligatori
+
         for (Campo c : categoria.getCampi().values()) {
             if (c.isObbligatorio()) {
                 String val = valoriCampi.get(c.getNome());
@@ -131,7 +120,6 @@ public class Proposta implements Observable {
             }
         }
 
-        // 2. Controllo date
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             String dataTermineStr = valoriCampi.get("Termine ultimo di iscrizione");
@@ -142,21 +130,17 @@ public class Proposta implements Observable {
                 LocalDate dataInizio = LocalDate.parse(dataInizioStr, formatter);
                 LocalDate oggi = LocalDate.now();
 
-                // Il termine iscrizione deve essere nel futuro rispetto a oggi
                 if (!dataTermine.isAfter(oggi)) {
                     return false;
                 }
 
-                // La data dell'evento deve essere almeno due giorni dopo il termine di
-                // iscrizione
-                if (!dataInizio.isAfter(dataTermine.plusDays(1))) { // plusDays(1) copre "successiva di almeno due
-                                                                    // giorni" (deve superare dataTermine + 1)
-                    return false; // se è "successiva di almeno 2 giorni", significa dataInizio >= dataTermine + 2
+                if (!dataInizio.isAfter(dataTermine.plusDays(1))) {
+
+                    return false;
                 }
             }
         } catch (DateTimeParseException | NullPointerException e) {
-            // Se le date non sono formattate bene o mancano valori fondamentali, non è
-            // valida
+
             return false;
         }
 
@@ -164,10 +148,6 @@ public class Proposta implements Observable {
         return true;
     }
 
-    /**
-     * Pubblica la proposta facendola passare allo stato APERTA, a patto che sia
-     * VALIDA.
-     */
     public void pubblica() {
         if (this.stato == StatoProposta.VALIDA || verificaValidita()) {
             this.stato = StatoProposta.APERTA;

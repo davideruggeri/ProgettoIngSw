@@ -2,14 +2,6 @@ package it.unibs.ing.model;
 
 import java.io.Serializable;
 
-/**
- * Rappresenta la definizione di un campo per una categoria.
- * Questa classe descrive la struttura di un dato che verrà richiesto
- * all'utente quando creerà una proposta per una certa categoria.
- * 
- * Design by Contract:
- * - Invarianti: nome != null, descrizione != null, tipo != null
- */
 public class Campo implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -18,14 +10,6 @@ public class Campo implements Serializable {
     private boolean obbligatorio;
     private TipoCampo tipo;
 
-    /**
-     * Costruttore della classe Campo.
-     * 
-     * @param nome         Nome univoco del campo.
-     * @param descrizione  Descrizione del significato del campo.
-     * @param obbligatorio Se il campo deve essere compilato obbligatoriamente.
-     * @param tipo         Il tipo di dato del campo (Stringa, Intero, ecc.).
-     */
     public Campo(String nome, String descrizione, boolean obbligatorio, TipoCampo tipo) {
         assert nome != null && !nome.isBlank() : "Il nome non può essere nullo o vuoto";
         assert descrizione != null : "La descrizione non può essere nulla";

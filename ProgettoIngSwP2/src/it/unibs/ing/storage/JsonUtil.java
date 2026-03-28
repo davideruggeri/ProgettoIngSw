@@ -15,20 +15,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Classe di utilità per convertire gli oggetti del dominio in formato JSON e
- * viceversa.
- * Implementazione manuale "naive" per evitare dipendenze esterne.
- */
 public class JsonUtil {
-
-    // --- WRITER ---
 
     public static String scriviCategorie(GestoreCategorie gestore) {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");
 
-        // Categorie (salviamo solo le radici, le sottocategorie saranno annidate)
         sb.append("  \"categorie\": [\n");
         int i = 0;
         List<Categoria> radici = gestore.getCategorieRadice();
@@ -41,16 +33,11 @@ public class JsonUtil {
             i++;
         }
         sb.append("  ],\n");
-
-        // Campi Base
         sb.append("  \"campiBase\": ");
         sb.append(scriviListaCampi(gestore.getCampiBase(), "  "));
         sb.append(",\n");
-
-        // Campi Comuni
         sb.append("  \"campiComuni\": ");
         sb.append(scriviListaCampi(gestore.getCampiComuni(), "  "));
-
         sb.append("\n}");
         return sb.toString();
     }
@@ -64,7 +51,6 @@ public class JsonUtil {
         sb.append(indent).append("  \"campi\": ")
                 .append(scriviListaCampi(new ArrayList<>(c.getCampi().values()), indent + "  "));
 
-        // Sottocategorie ricorsive
         if (!c.getSottocategorie().isEmpty()) {
             sb.append(",\n").append(indent).append("  \"sottocategorie\": [\n");
             int i = 0;
@@ -79,7 +65,7 @@ public class JsonUtil {
             }
             sb.append(indent).append("  ]\n");
         } else {
-            sb.append("\n"); // chiusura dopo campi
+            sb.append("\n");
         }
 
         sb.append(indent).append("}");
@@ -135,36 +121,18 @@ public class JsonUtil {
         return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
     }
 
-    // --- READER ---
-
     public static GestoreCategorie leggiCategorie(String json) {
+
         GestoreCategorie gestore = new GestoreCategorie();
-        // Parsing molto semplificato basato su regex per trovare blocchi
-
-        // 1. Estrai Categorie (partendo dalle radici)
-        // Siccome estraiListaCategorie in questo parser molto grezzo fa fatica con la
-        // ricorsione nidificata delle {},
-        // usiamo un trucco per parsing custom oppure dobbiamo migliorare il parser
-        // manuale.
-        // Dato che ci è richiesto zero-dependency, proviamo ad affidarci a un parsing
-        // più robusto per l'albero.
-
         List<Categoria> categorieRadice = estraiAlberoCategorie(estraiBlocco(json, "categorie"));
         for (Categoria c : categorieRadice) {
             try {
-                // Aggiungiamo partendo dalla radice. Il metodo nel gestore gestisce già
-                // l'albero
-                // Modifichiamo il gestore temporaneamente per aggiungere la radice, poi
-                // aggiungiamo ricorsivamente i figli
                 gestore.aggiungiCategoria(c);
                 aggiungiSottocategorieRicorsive(gestore, c);
             } catch (Exception e) {
             }
         }
 
-        // 2. Estrai Campi Comuni (Campi Base sono hardcoded nel costruttore, ma
-        // potremmo sovrascriverli se volessimo)
-        // Per ora leggiamo solo i Comuni aggiuntivi
         List<Campo> commons = estraiListaCampi(estraiBlocco(json, "campiComuni"));
         for (Campo c : commons) {
             gestore.aggiungiCampoComune(c);
@@ -193,12 +161,9 @@ public class JsonUtil {
         return utenti;
     }
 
-    // --- HELPER DI PARSING ---
-
     private static void aggiungiSottocategorieRicorsive(GestoreCategorie gestore, Categoria padre) {
         for (Categoria sub : padre.getSottocategorie()) {
             try {
-                // Registra solo nella mappa (il link padre-figlio esiste già in memoria)
                 gestore.registraCategoriaSenzaEreditare(sub);
                 aggiungiSottocategorieRicorsive(gestore, sub);
             } catch (Exception e) {
@@ -206,7 +171,6 @@ public class JsonUtil {
         }
     }
 
-    // Nuova implementazione per supportare alberi gerarchici
     private static List<Categoria> estraiAlberoCategorie(String arrayContent) {
         List<Categoria> list = new ArrayList<>();
         if (arrayContent == null || arrayContent.trim().isEmpty())
@@ -218,8 +182,6 @@ public class JsonUtil {
             String desc = estraiValore(b, "descrizione");
             if (nome != null) {
                 Categoria c = new Categoria(nome, desc != null ? desc : "");
-
-                // Campi specifici
                 String campiContent = estraiBlocco(b, "campi");
                 List<Campo> campi = estraiListaCampi(campiContent);
                 for (Campo cmp : campi) {
@@ -228,8 +190,6 @@ public class JsonUtil {
                     } catch (Exception e) {
                     }
                 }
-
-                // Sottocategorie
                 String subContent = estraiBlocco(b, "sottocategorie");
                 if (subContent != null && !subContent.trim().isEmpty()) {
                     List<Categoria> subs = estraiAlberoCategorie(subContent);
@@ -268,7 +228,6 @@ public class JsonUtil {
         return list;
     }
 
-    // Trova il contenuto dentro "key": [ ... ] oppure "key": { ... }
     private static String estraiBlocco(String json, String key) {
         int startKey = json.indexOf("\"" + key + "\"");
         if (startKey == -1)
@@ -308,8 +267,6 @@ public class JsonUtil {
         return null;
     }
 
-    // Versione migliorata di estraiOggetti che ignora gli oggetti annidati
-    // (top-level only)
     private static List<String> estraiOggettiTopLevel(String content) {
         List<String> oggetti = new ArrayList<>();
         if (content == null)
@@ -342,7 +299,6 @@ public class JsonUtil {
         int startSep = oggetto.indexOf(":", startKey);
         int startVal = startSep + 1;
 
-        // Skip whitespace
         while (startVal < oggetto.length() && Character.isWhitespace(oggetto.charAt(startVal))) {
             startVal++;
         }
@@ -352,15 +308,15 @@ public class JsonUtil {
 
         char firstChar = oggetto.charAt(startVal);
         if (firstChar == '\"') {
-            // Stringa
+
             int endVal = oggetto.indexOf("\"", startVal + 1);
-            // Gestione escape semplice
+
             while (endVal > 0 && oggetto.charAt(endVal - 1) == '\\') {
                 endVal = oggetto.indexOf("\"", endVal + 1);
             }
             return oggetto.substring(startVal + 1, endVal);
         } else {
-            // Booleano o numero (fino a virgola o fine)
+
             int endVal = startVal;
             while (endVal < oggetto.length() && oggetto.charAt(endVal) != ',' && oggetto.charAt(endVal) != '}') {
                 endVal++;
@@ -369,17 +325,6 @@ public class JsonUtil {
         }
     }
 
-    // -----------------------------------------------
-    // --- PROPOSTE ---
-    // -----------------------------------------------
-
-    /**
-     * Serializza la lista di proposte aperte in formato JSON.
-     * Ogni proposta tiene il nome della categoria e i valori dei campi.
-     *
-     * @param proposte Lista di proposte da serializzare.
-     * @return Stringa JSON.
-     */
     public static String scriviProposte(List<Proposta> proposte) {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");
@@ -410,15 +355,6 @@ public class JsonUtil {
         return sb.toString();
     }
 
-    /**
-     * Deserializza le proposte dal JSON, ricollegando ogni proposta alla sua
-     * Categoria tramite il GestoreCategorie.
-     *
-     * @param json    Contenuto del file proposte.json.
-     * @param gestore GestoreCategorie già inizializzato, per risolvere la
-     *                categoria.
-     * @return Lista di proposte ricostruite (solo quelle con categoria trovata).
-     */
     public static List<Proposta> leggiProposte(String json, GestoreCategorie gestore) {
         List<Proposta> risultato = new ArrayList<>();
         String arrayContent = estraiBlocco(json, "proposte");
@@ -440,10 +376,9 @@ public class JsonUtil {
             try {
                 p.setStato(StatoProposta.valueOf(statoStr));
             } catch (IllegalArgumentException e) {
-                continue; // stato sconosciuto, scarto
+                continue;
             }
 
-            // Leggo la mappa campi (oggetto JSON)
             String campiContent = estraiBlocco(blocco, "campi");
             if (campiContent != null) {
                 Map<String, String> valori = estraiMappaStringhe(campiContent);
@@ -456,13 +391,9 @@ public class JsonUtil {
         return risultato;
     }
 
-    /**
-     * Estrae una mappa chiave-valore da un oggetto JSON semplice (valori solo
-     * stringa).
-     */
     private static Map<String, String> estraiMappaStringhe(String oggetto) {
         Map<String, String> mappa = new HashMap<>();
-        // Iteriamo cercando pattern "chiave": "valore"
+
         int pos = 0;
         while (pos < oggetto.length()) {
             int startKey = oggetto.indexOf('"', pos);
@@ -476,12 +407,12 @@ public class JsonUtil {
             int colon = oggetto.indexOf(':', endKey);
             if (colon == -1)
                 break;
-            // Cerca il valore stringa
+
             int startVal = oggetto.indexOf('"', colon);
             if (startVal == -1)
                 break;
             int endVal = oggetto.indexOf('"', startVal + 1);
-            // gestisci escape
+
             while (endVal > 0 && oggetto.charAt(endVal - 1) == '\\') {
                 endVal = oggetto.indexOf('"', endVal + 1);
             }
