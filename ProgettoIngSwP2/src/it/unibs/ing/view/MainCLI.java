@@ -31,6 +31,10 @@ public class MainCLI {
         caricaDati();
     }
 
+    /**
+     * Tenta il caricamento di categorie, utenti e proposte dalla rispettiva persistenza JSON.
+     * Gestisce le associazioni in memoria, se i file esistono. In caso contrario, inizializza le strutture.
+     */
     private void caricaDati() {
         try {
             this.gestoreCategorie = GestoreFile.caricaCategorie(FILE_DATI);
@@ -61,6 +65,11 @@ public class MainCLI {
         }
     }
 
+    /**
+     * Ciclo principale dell'applicazione. Dispone la gestione del login
+     * e, in base al ruolo dell'utente smistato dal GestoreSessione, avvia 
+     * il menu relativo (Configuratore o Fruitore_futuro), salvando i dati alla chiusura.
+     */
     public void run() {
         boolean inEsecuzione = true;
         while (inEsecuzione) {
@@ -111,6 +120,11 @@ public class MainCLI {
         }
     }
 
+    /**
+     * Interpreta e gestisce le scelte del menu dedicato all'amministratore (Configuratore).
+     * 
+     * @return true se occorre mantenere attiva la sessione, false se l'utente richiede l'uscita
+     */
     private boolean menuConfiguratore() {
         vista.stampaMessaggio("\n--- MENU CONFIGURATORE ---");
         vista.stampaMessaggio("1. Visualizza Categorie");
@@ -154,6 +168,10 @@ public class MainCLI {
         return true;
     }
 
+    /**
+     * Sottomenu che aggancia le logiche collegate al ciclo di vita di una Proposta
+     * (creazione, pubblicazione in bacheca, visualizzazione).
+     */
     private void menuProposte() {
         boolean continua = true;
         while (continua) {
@@ -183,6 +201,11 @@ public class MainCLI {
         }
     }
 
+    /**
+     * Intercetta passo passo la compilazione di una Proposta, chiedendo
+     * la categoria di riferimento e i valori di tutti i campi.
+     * Se la proposta è valida, offre la pubblicazione immediata.
+     */
     private void creaProposta() {
         if (gestoreCategorie.getCategorie().isEmpty()) {
             vista.stampaMessaggio("Nessuna categoria disponibile. Crea prima una categoria.");
@@ -250,6 +273,10 @@ public class MainCLI {
         visualizzaBacheca();
     }
 
+    /**
+     * Scorre la bacheca raggruppando le proposte per categoria e ne stampa 
+     * i dettagli (stato e campi compilati).
+     */
     private void visualizzaBacheca() {
         Bacheca bacheca = gestoreProposte.getBacheca();
         Map<String, List<Proposta>> tutte = bacheca.getTutteLeProposte();
@@ -428,6 +455,10 @@ public class MainCLI {
         }
     }
 
+    /**
+     * Salva lo stato di tutti i gestori riversando Categorie, Utenti 
+     * e Proposte all'interno dei rispettivi file JSON.
+     */
     private void salvaDati() {
         try {
             GestoreFile.salvaCategorie(gestoreCategorie, FILE_DATI);

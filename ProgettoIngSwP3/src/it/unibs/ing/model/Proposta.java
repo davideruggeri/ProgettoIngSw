@@ -47,6 +47,12 @@ public class Proposta implements Observable {
         return stato;
     }
 
+    /**
+     * Modifica lo stato della proposta e, se lo stato cambia effettivamente 
+     * rispetto al precedente, notifica immediatamente tutti gli iscritti (Observer).
+     * 
+     * @param nuovoStato il nuovo stato in cui verserà la proposta
+     */
     public void setStato(StatoProposta nuovoStato) {
         if (this.stato != nuovoStato) {
             this.stato = nuovoStato;
@@ -88,6 +94,12 @@ public class Proposta implements Observable {
         }
     }
 
+    /**
+     * Controlla se la proposta ha ancora posti disponibili per nuovi iscritti.
+     * Si basa sul raffronto tra iscritti attuali e "Numero di partecipanti".
+     * 
+     * @return true se è possibile accettare nuovi fruitori, false altrimenti
+     */
     public boolean puoIscrivere() {
         try {
             int maxPartecipanti = Integer.parseInt(getValore("Numero di partecipanti"));
@@ -97,6 +109,12 @@ public class Proposta implements Observable {
         }
     }
 
+    /**
+     * Registra l'username di un fruitore intenzionato ad aderire.
+     * 
+     * @param usernameFruitore il nome del fruitore iscritto
+     * @return true se l'iscrizione è andata a buon fine, false se utente già presente o posti esauriti
+     */
     public boolean aggiungiIscritto(String usernameFruitore) {
         if (!iscritti.contains(usernameFruitore) && puoIscrivere()) {
             iscritti.add(usernameFruitore);
@@ -109,6 +127,13 @@ public class Proposta implements Observable {
         return iscritti.remove(usernameFruitore);
     }
 
+    /**
+     * Controlla che tutti i campi obbligatori definiti dalla Categoria siano stati compilati 
+     * e valuta la coerenza temporale delle date di iscrizione e svolgimento.
+     * In caso di successo, la proposta diventa automaticamente VALIDA.
+     * 
+     * @return true se la proposta rispetta tutti i vincoli, false altrimenti
+     */
     public boolean verificaValidita() {
 
         for (Campo c : categoria.getCampi().values()) {
@@ -148,6 +173,12 @@ public class Proposta implements Observable {
         return true;
     }
 
+    /**
+     * Tenta di rendere la proposta APERTA verificandone prima la validità strutturale.
+     * L'apertura consente ai fruitori di iscriversi.
+     * 
+     * @throws IllegalStateException se l'esito di verificaValidita() è falso
+     */
     public void pubblica() {
         if (this.stato == StatoProposta.VALIDA || verificaValidita()) {
             this.stato = StatoProposta.APERTA;

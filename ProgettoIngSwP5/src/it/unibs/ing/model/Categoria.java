@@ -27,6 +27,12 @@ public class Categoria implements Serializable {
         this.padre = null;
     }
 
+    /**
+     * Associa un nuovo campo alla Categoria controllando che non ci siano duplicati.
+     * 
+     * @param campo l'oggetto Campo da aggiungere
+     * @throws IllegalArgumentException se un campo con lo stesso nome esiste già
+     */
     public void aggiungiCampo(Campo campo) {
         assert campo != null : "Il campo non può essere nullo";
 
@@ -68,6 +74,13 @@ public class Categoria implements Serializable {
         return new ArrayList<>(sottocategorie);
     }
 
+    /**
+     * Collega una categoria figlia propagando automaticamente i campi 
+     * attualmente posseduti (base, comuni e specifici ereditati).
+     * 
+     * @param sottocategoria il nodo figlio da aggiungere
+     * @throws IllegalArgumentException se il nome va in conflitto con figli esistenti
+     */
     public void aggiungiSottocategoria(Categoria sottocategoria) {
         assert sottocategoria != null : "La sottocategoria non può essere nulla";
 

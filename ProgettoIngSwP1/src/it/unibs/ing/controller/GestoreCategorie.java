@@ -24,6 +24,10 @@ public class GestoreCategorie implements Serializable {
         this.campiComuni = new ArrayList<>();
     }
 
+    /**
+     * Inizializza l'elenco dei campi base comuni a tutte le categorie.
+     * @return una lista predefinita di campi base (Titolo, Luogo, Data, ecc.)
+     */
     private List<Campo> inizializzaCampiBase() {
         List<Campo> base = new ArrayList<>();
         base.add(new Campo("Titolo", "Nome di fantasia dell'iniziativa", true, TipoCampo.STRINGA));
@@ -37,6 +41,15 @@ public class GestoreCategorie implements Serializable {
         return base;
     }
 
+    /**
+     * Aggiunge una categoria al sistema, eventualmente associandola a un padre.
+     * Se è una categoria radice (nomePadre null o vuoto), vengono aggiunti in automatico 
+     * i campi base e i campi comuni.
+     * 
+     * @param categoria la categoria da aggiungere
+     * @param nomePadre il nome della categoria padre, o null se categoria radice
+     * @throws IllegalArgumentException se la categoria esiste già o il padre non viene trovato
+     */
     public void aggiungiCategoria(Categoria categoria, String nomePadre) {
         assert categoria != null : "La categoria non può essere nulla";
         if (categorie.containsKey(categoria.getNome())) {
@@ -71,6 +84,11 @@ public class GestoreCategorie implements Serializable {
         aggiungiCategoria(categoria, null);
     }
 
+    /**
+     * Aggiunge un campo comune a tutte le categorie attualmente presenti nel sistema.
+     * 
+     * @param campo il nuovo campo comune da inserire
+     */
     public void aggiungiCampoComune(Campo campo) {
         campiComuni.add(campo);
         for (Categoria c : categorie.values()) {
@@ -86,6 +104,12 @@ public class GestoreCategorie implements Serializable {
         return categorie.get(nome);
     }
 
+    /**
+     * Rimuove una categoria specifica e gestisce lo scollamento dal padre 
+     * prima di avviare la rimozione ricorsiva dei figli.
+     * 
+     * @param nome il nome della categoria da eliminare
+     */
     public void rimuoviCategoria(String nome) {
         Categoria daRimuovere = categorie.get(nome);
         if (daRimuovere != null) {
@@ -96,6 +120,12 @@ public class GestoreCategorie implements Serializable {
         }
     }
 
+    /**
+     * Rimuove ricorsivamente una categoria e tutte le sue sottocategorie 
+     * in cascata dalla mappa principale.
+     * 
+     * @param cat la categoria di partenza per la cancellazione ricorsiva
+     */
     private void rimuoviCategoriaRicorsivamente(Categoria cat) {
         List<Categoria> subCats = new ArrayList<>(cat.getSottocategorie());
         for (Categoria sub : subCats) {

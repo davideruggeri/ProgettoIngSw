@@ -33,6 +33,10 @@ public class MainCLI {
         caricaDati();
     }
 
+    /**
+     * Tenta il ripristino dell'ultimo stato valido di categorie, utenti e proposte
+     * serializzate tramite JsonUtil.
+     */
     private void caricaDati() {
         try {
             this.gestoreCategorie = GestoreFile.caricaCategorie(FILE_DATI);
@@ -63,6 +67,11 @@ public class MainCLI {
         }
     }
 
+    /**
+     * Esegue il loop applicativo, richiamando prima il controllo automatizzato
+     * sulle scadenze delle bacheche, per poi smistare l'utente nel menu associato
+     * in base ai privilegi del ruolo.
+     */
     public void run() {
         boolean inEsecuzione = true;
         while (inEsecuzione) {
@@ -165,6 +174,12 @@ public class MainCLI {
         return true;
     }
 
+    /**
+     * Propone e gestisce il cruscotto relativo ai Fruitori, che ruota attorno
+     * all'osservazione, l'iscrizione alle proposte e l'ascolto delle notifiche.
+     * 
+     * @return true per rimanere connessi, false per intercettare l'uscita
+     */
     private boolean menuFruitore() {
         vista.stampaMessaggio("\n--- MENU FRUITORE ---");
         vista.stampaMessaggio("1. Visualizza Bacheca");
@@ -200,6 +215,10 @@ public class MainCLI {
         return true;
     }
 
+    /**
+     * Procedura che consente a un fruitore partecipante di ritirare la sua adesione.
+     * Controlla che le scadenze temporali lo consentano ed elimina l'associazione di osservazione.
+     */
     private void ritiraIscrizione() {
         Fruitore f = (Fruitore) gestoreSessione.getUtenteCorrente();
         String mioUsername = f.getNomeUtente();
@@ -254,6 +273,11 @@ public class MainCLI {
         }
     }
 
+    /**
+     * Permette a un Fruitore di cercare una proposta aperta sfogliando
+     * in base alla categoria. In caso positivo l'utente prende un posto
+     * e diventa Observer per quella proposta.
+     */
     private void iscrivitiProposta() {
         String nomeCat = vista.leggiStringa("Inserisci la Categoria dell'evento a cui vuoi iscriverti");
         List<Proposta> aperte = gestoreProposte.getBacheca().getProposteApertePerCategoria(nomeCat);
@@ -288,6 +312,10 @@ public class MainCLI {
         }
     }
 
+    /**
+     * Visualizza la lista delle notifiche dirette ad un Fruitore
+     * a causa dei cambiamenti di stato delle proposte in cui è iscritto.
+     */
     private void gestisciNotifiche() {
         Fruitore f = (Fruitore) gestoreSessione.getUtenteCorrente();
         List<String> notifiche = f.getNotifiche();
@@ -435,6 +463,11 @@ public class MainCLI {
         vista.stampaMessaggio("=============================");
     }
 
+    /**
+     * Permette il ritiro per forza maggiore di una proposta aperta o confermata,
+     * effettuando i controlli sulle date e interpellando GestoreProposte per avvisare
+     * tutti gli iscritti tramite il pattern Observer.
+     */
     private void ritiraProposta() {
         boolean trovate = false;
         List<Proposta> proposteDaRitirare = new java.util.ArrayList<>();
@@ -627,6 +660,9 @@ public class MainCLI {
         }
     }
 
+    /**
+     * Scrive su memoria permanente lo stato finale dei tre gestori core.
+     */
     private void salvaDati() {
         try {
             GestoreFile.salvaCategorie(gestoreCategorie, FILE_DATI);

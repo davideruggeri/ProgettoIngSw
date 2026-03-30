@@ -45,6 +45,13 @@ public class Proposta {
         this.stato = stato;
     }
 
+    /**
+     * Controlla che tutti i campi obbligatori definiti dalla Categoria siano stati compilati 
+     * e valuta la coerenza temporale delle date di iscrizione e svolgimento.
+     * In caso di successo, la proposta diventa automaticamente VALIDA.
+     * 
+     * @return true se la proposta rispetta tutti i vincoli, false altrimenti
+     */
     public boolean verificaValidita() {
 
         for (Campo c : categoria.getCampi().values()) {
@@ -84,6 +91,12 @@ public class Proposta {
         return true;
     }
 
+    /**
+     * Tenta di rendere la proposta APERTA verificandone prima la validità strutturale.
+     * L'apertura consente ai fruitori di iscriversi.
+     * 
+     * @throws IllegalStateException se l'esito di verificaValidita() è falso
+     */
     public void pubblica() {
         if (this.stato == StatoProposta.VALIDA || verificaValidita()) {
             this.stato = StatoProposta.APERTA;

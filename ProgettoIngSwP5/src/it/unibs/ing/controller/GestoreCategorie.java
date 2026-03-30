@@ -24,6 +24,10 @@ public class GestoreCategorie implements Serializable {
         this.campiComuni = new ArrayList<>();
     }
 
+    /**
+     * Inizializza l'elenco dei campi base comuni a tutte le categorie.
+     * @return una lista predefinita di campi base
+     */
     private List<Campo> inizializzaCampiBase() {
         List<Campo> base = new ArrayList<>();
         base.add(new Campo("Titolo", "Nome di fantasia dell'iniziativa", true, TipoCampo.STRINGA));
@@ -37,6 +41,14 @@ public class GestoreCategorie implements Serializable {
         return base;
     }
 
+    /**
+     * Aggiunge una categoria al sistema gestendo l'eventuale relazione padre-figlio 
+     * e l'ereditarietà automatica dei campi base e comuni.
+     * 
+     * @param categoria la categoria da aggiungere
+     * @param nomePadre il nome della categoria padre, o null se categoria radice
+     * @throws IllegalArgumentException se la categoria esiste già o il padre non viene trovato
+     */
     public void aggiungiCategoria(Categoria categoria, String nomePadre) {
         assert categoria != null : "La categoria non può essere nulla";
         if (categorie.containsKey(categoria.getNome())) {
@@ -73,12 +85,24 @@ public class GestoreCategorie implements Serializable {
         aggiungiCategoria(categoria, null);
     }
 
+    /**
+     * Inserisce direttamente una categoria nella mappa di gestione senza scatenare 
+     * la logica automatica di ereditarietà dei campi. Utile per il parsing JSON.
+     * 
+     * @param categoria la categoria da registrare internamente
+     */
     public void registraCategoriaSenzaEreditare(Categoria categoria) {
         if (!categorie.containsKey(categoria.getNome())) {
             categorie.put(categoria.getNome(), categoria);
         }
     }
 
+    /**
+     * Aggiunge un nuovo campo d'interesse generale e lo inietta
+     * su tutte le Categorie attive nel gestore.
+     * 
+     * @param campo l'oggetto Campo comune
+     */
     public void aggiungiCampoComune(Campo campo) {
         campiComuni.add(campo);
         for (Categoria c : categorie.values()) {
@@ -104,6 +128,12 @@ public class GestoreCategorie implements Serializable {
         }
     }
 
+    /**
+     * Procedura di cancellazione ricorsiva per smantellare 
+     * un intero sotto-albero di categorie.
+     * 
+     * @param cat la categoria radice del ramo da rimuovere
+     */
     private void rimuoviCategoriaRicorsivamente(Categoria cat) {
 
         List<Categoria> subCats = new ArrayList<>(cat.getSottocategorie());

@@ -26,6 +26,12 @@ public class Categoria implements Serializable {
         this.padre = null;
     }
 
+    /**
+     * Associa un nuovo campo alla Categoria.
+     * 
+     * @param campo l'oggetto Campo da aggiungere alla mappa interna dei campi
+     * @throws IllegalArgumentException se un campo con lo stesso nome esiste già in questa categoria
+     */
     public void aggiungiCampo(Campo campo) {
         assert campo != null : "Il campo non può essere nullo";
         if (campi.containsKey(campo.getNome())) {
@@ -66,6 +72,14 @@ public class Categoria implements Serializable {
         return new ArrayList<>(sottocategorie);
     }
 
+    /**
+     * Aggiunge una Categoria come figlia (sottocategoria) di quella attuale.
+     * Esegue inoltre l'ereditarietà automatica, riversando tutti i campi posseduti
+     * dal padre nella nuova sottocategoria (compresi quelli base, comuni o specifici).
+     * 
+     * @param sottocategoria l'oggetto Categoria da innestare nel ramo corrente
+     * @throws IllegalArgumentException se esiste già una sottocategoria omonima tra figlie dirette
+     */
     public void aggiungiSottocategoria(Categoria sottocategoria) {
         assert sottocategoria != null : "La sottocategoria non può essere nulla";
 

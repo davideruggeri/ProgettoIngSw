@@ -25,6 +25,10 @@ public class ImportatoreBatch {
         this.gestoreProposte = gestoreProposte;
     }
 
+    /**
+     * Innesca la lettura sequenziale del file batch fornito nel costruttore.
+     * Ignora le righe vuote e i commenti scritti col prefisso '#'.
+     */
     public void esegui() {
         System.out.println("\n=== AVVIO IMPORTAZIONE BATCH (" + filePath + ") ===");
 
@@ -48,6 +52,12 @@ public class ImportatoreBatch {
         System.out.println("=== IMPORTAZIONE COMPLETATA: " + righeOk + " OK, " + righeErrore + " ERRORI ===\n");
     }
 
+    /**
+     * Analizza una specifica riga di comando separandola al carattere ';'
+     * ed esegue lo switch sul comando corrispondente.
+     * 
+     * @param riga il comando testuale in lettura passiva
+     */
     private void processaRiga(String riga) {
         String[] parti = riga.split(";", -1);
         if (parti.length < 1) {
@@ -75,6 +85,11 @@ public class ImportatoreBatch {
         }
     }
 
+    /**
+     * Esegue il comando CREA_CATEGORIA delegando al Controller le instanziazioni.
+     * 
+     * @param parti l'array generato dallo split contenente tokenizzati i parametri del comando
+     */
     private void creaCategoriaCmd(String[] parti) {
         if (parti.length < 3) {
             errore("CREA_CATEGORIA richiede almeno: Nome;Descrizione");
@@ -96,6 +111,11 @@ public class ImportatoreBatch {
         }
     }
 
+    /**
+     * Esegue il comando AGGIUNGI_CAMPO su una categoria precedentemente caricata.
+     * 
+     * @param parti array delimitato ';' del comando riga
+     */
     private void aggiungiCampoCmd(String[] parti) {
         if (parti.length < 6) {
             errore("AGGIUNGI_CAMPO richiede: NomeCat;NomeCampo;Descr;OBBLIGATORIO|OPZIONALE;TIPO");
@@ -128,6 +148,12 @@ public class ImportatoreBatch {
         }
     }
 
+    /**
+     * Forgia una nuova Proposta compilando i campi principali in automatico,
+     * effettuando anche una successiva valutazione di Verifica Validità per memorizzarla in pool.
+     * 
+     * @param parti argomenti scaturiti dallo splitting del batch
+     */
     private void creaPropostaCmd(String[] parti) {
         if (parti.length < 9) {
             errore("CREA_PROPOSTA richiede: Cat;Titolo;DataConclusiva;TermineIscrizione;Ora;Luogo;NumPart;Quota");
@@ -170,6 +196,11 @@ public class ImportatoreBatch {
         }
     }
 
+    /**
+     * Richiama la pubblicazione in bacheca di una proposta battezzata come VALIDA.
+     * 
+     * @param parti i parametri estratti, di cui interessa essenzialmente la PK Titolo
+     */
     private void pubblicaPropostaCmd(String[] parti) {
         if (parti.length < 2) {
             errore("PUBBLICA_PROPOSTA richiede: Titolo");

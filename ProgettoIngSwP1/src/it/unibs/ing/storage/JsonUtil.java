@@ -13,6 +13,13 @@ import java.util.List;
 
 public class JsonUtil {
 
+    /**
+     * Serializza lo stato di GestoreCategorie in formato JSON.
+     * Include le categorie radice (con relative sottocategorie), i campi base e i campi comuni.
+     * 
+     * @param gestore l'istanza di GestoreCategorie da serializzare
+     * @return una stringa contenente la rappresentazione JSON del gestore
+     */
     public static String scriviCategorie(GestoreCategorie gestore) {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");
@@ -41,6 +48,14 @@ public class JsonUtil {
         return sb.toString();
     }
 
+    /**
+     * Metodo di appoggio per serializzare ricorsivamente una singola singola Categoria 
+     * e le sue sottocategorie, applicando l'indentazione corretta.
+     * 
+     * @param c la Categoria da serializzare
+     * @param indent la stringa di indentazione corrente (es. spazi)
+     * @return la stringa JSON corrispondente alla categoria
+     */
     private static String scriviCategoria(Categoria c, String indent) {
         StringBuilder sb = new StringBuilder();
         sb.append(indent).append("{\n");
@@ -120,6 +135,13 @@ public class JsonUtil {
         return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
     }
 
+    /**
+     * Deserializza una stringa JSON trasformandola in un'istanza di GestoreCategorie.
+     * Ricostruisce l'albero delle categorie e i campi comuni.
+     * 
+     * @param json la stringa JSON con i dati salvati
+     * @return la nuova istanza di GestoreCategorie popolata con i dati letti
+     */
     public static GestoreCategorie leggiCategorie(String json) {
         GestoreCategorie gestore = new GestoreCategorie();
 
@@ -140,6 +162,13 @@ public class JsonUtil {
         return gestore;
     }
 
+    /**
+     * Deserializza l'elenco degli utenti dal blocco JSON corrispondente.
+     * Distingue tra CONFIGURATORE e FRUITORE in base al campo "ruolo".
+     * 
+     * @param json la stringa JSON contenente la lista degli utenti
+     * @return la lista di oggetti Utente de-serializzati
+     */
     public static List<Utente> leggiUtenti(String json) {
         List<Utente> utenti = new ArrayList<>();
         List<String> blocchiUtenti = estraiOggettiTopLevel(estraiBlocco(json, "utenti"));
@@ -170,6 +199,13 @@ public class JsonUtil {
         }
     }
 
+    /**
+     * Visita ed estrae ricorsivamente un albero di Categorie da un frammento JSON ('['...']').
+     * Supporta la lettura dei campi e delle sottocategorie annidate.
+     * 
+     * @param arrayContent il contenuto JSON puro della lista di categorie
+     * @return la lista di oggetti Categoria parsati
+     */
     private static List<Categoria> estraiAlberoCategorie(String arrayContent) {
         List<Categoria> list = new ArrayList<>();
         if (arrayContent == null || arrayContent.trim().isEmpty())
@@ -229,6 +265,15 @@ public class JsonUtil {
         return list;
     }
 
+    /**
+     * Estrae un intero blocco JSON (oggetto o array, tra parentesi {} o []) 
+     * corrispondente ad una determinata chiave (key).
+     * Risolve il bilanciamento delle parentesi per un matching corretto.
+     * 
+     * @param json la stringa JSON completa
+     * @param key il nome della chiave da cercare
+     * @return il testo contenuto nel blocco (parentesi incluse), o null se non trovato
+     */
     private static String estraiBlocco(String json, String key) {
         int startKey = json.indexOf("\"" + key + "\"");
         if (startKey == -1)
@@ -292,6 +337,14 @@ public class JsonUtil {
         return oggetti;
     }
 
+    /**
+     * Estrae il valore scalare puro associato a una singola chiave in un JSON frammentato,
+     * supportando stringhe tra virgolette o valori grezzi/booleani interrotti dalla virgola.
+     * 
+     * @param oggetto il contenuto dell'oggetto corrente
+     * @param key la chiave di cui trovare il valore
+     * @return la stringa che rappresenta il valore (senza virgolette), o null se assente
+     */
     private static String estraiValore(String oggetto, String key) {
         int startKey = oggetto.indexOf("\"" + key + "\"");
         if (startKey == -1)

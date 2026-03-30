@@ -23,6 +23,10 @@ public class MainCLI {
         caricaDati();
     }
 
+    /**
+     * Tenta il caricamento dei dati di sistema (categorie e utenti) da file JSON.
+     * Se i file non esistono o sono corrotti, inizializza strutture vuote/default.
+     */
     private void caricaDati() {
         try {
             this.gestoreCategorie = GestoreFile.caricaCategorie(FILE_DATI);
@@ -42,6 +46,11 @@ public class MainCLI {
         }
     }
 
+    /**
+     * Avvia il ciclo principale dell'applicazione.
+     * Gestisce l'alternanza tra fase di login e menu del configuratore,
+     * assicurando il salvataggio dei dati all'uscita.
+     */
     public void run() {
         boolean inEsecuzione = true;
         while (inEsecuzione) {
@@ -58,6 +67,11 @@ public class MainCLI {
         salvaDati();
     }
 
+    /**
+     * Gestisce il flusso interattivo di login. Se l'accesso ha successo e 
+     * il configuratore utilizza la password di default ("admin"), forza 
+     * la procedura di cambio password.
+     */
     private void loopLogin() {
         vista.stampaMessaggio("\n--- LOGIN ---");
         String nomeUtente = vista.leggiStringa("Nome Utente");
@@ -91,6 +105,11 @@ public class MainCLI {
         }
     }
 
+    /**
+     * Stampa e gestisce le scelte del menu principale dedicato al Configuratore.
+     * 
+     * @return true se l'utente desidera continuare la sessione, false se richiede l'uscita
+     */
     private boolean menuConfiguratore() {
         vista.stampaMessaggio("\n--- MENU CONFIGURATORE ---");
         vista.stampaMessaggio("1. Visualizza Categorie");
@@ -151,6 +170,10 @@ public class MainCLI {
         }
     }
 
+    /**
+     * Guida l'utente attraverso la creazione interattiva di una nuova Categoria.
+     * Chiede l'eventuale categoria padre e offre l'inserimento ciclico di campi specifici.
+     */
     private void creaCategoria() {
         String nome = vista.leggiStringa("Nome Categoria");
         String descrizione = vista.leggiStringa("Descrizione");
@@ -228,6 +251,10 @@ public class MainCLI {
         }
     }
 
+    /**
+     * Intercetta la richiesta di modifica di una categoria esistente tramite CLI.
+     * Per adesso supporta la modifica/rimozione dei campi specifici.
+     */
     private void modificaCategoria() {
         String nomeCategoria = vista.leggiStringa("Inserisci il nome della categoria da modificare");
         Categoria categoria = gestoreCategorie.getCategoria(nomeCategoria);

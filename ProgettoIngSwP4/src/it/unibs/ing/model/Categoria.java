@@ -27,6 +27,12 @@ public class Categoria implements Serializable {
         this.padre = null;
     }
 
+    /**
+     * Associa un nuovo campo alla Categoria.
+     * 
+     * @param campo l'oggetto Campo da aggiungere
+     * @throws IllegalArgumentException se un campo con lo stesso nome esiste già in questa categoria
+     */
     public void aggiungiCampo(Campo campo) {
         assert campo != null : "Il campo non può essere nullo";
 
@@ -68,6 +74,13 @@ public class Categoria implements Serializable {
         return new ArrayList<>(sottocategorie);
     }
 
+    /**
+     * Aggiunge una Categoria come figlia e gestisce l'ereditarietà automatica
+     * di tutti i campi presenti nel padre.
+     * 
+     * @param sottocategoria la categoria da impostare come figlia
+     * @throws IllegalArgumentException se esiste già una sottocategoria con lo stesso nome
+     */
     public void aggiungiSottocategoria(Categoria sottocategoria) {
         assert sottocategoria != null : "La sottocategoria non può essere nulla";
 

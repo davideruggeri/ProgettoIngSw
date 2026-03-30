@@ -97,6 +97,13 @@ public class JsonUtil {
         return sb.toString();
     }
 
+    /**
+     * Codifica in JSON la persistenza degli Utenti, specializzando differenze strutturali 
+     * come l'array delle 'notifiche' nel caso degli utenti Fruitore.
+     * 
+     * @param utenti rassegna degli utenti registrati nel sistema
+     * @return payload JSON corrispondente
+     */
     public static String scriviUtenti(List<Utente> utenti) {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");
@@ -155,6 +162,13 @@ public class JsonUtil {
         return gestore;
     }
 
+    /**
+     * Ripristina sia gli utenti Configuratore sia i Fruitori, incluse le eventuali
+     * code di notifiche personali non lette dedicate all'Observer pattern.
+     * 
+     * @param json file di salvataggio letto in forma pura
+     * @return la pool di utenti con privilegi adeguati
+     */
     public static List<Utente> leggiUtenti(String json) {
         List<Utente> utenti = new ArrayList<>();
         List<String> blocchiUtenti = estraiOggettiTopLevel(estraiBlocco(json, "utenti"));
@@ -359,6 +373,13 @@ public class JsonUtil {
         }
     }
 
+    /**
+     * Decodifica un array JSON primitivo basato su stringhe 
+     * per restituirne il corrispettivo Java.
+     * 
+     * @param arrayContent JSON raw corrispondente al campo di un array
+     * @return la lista di stringhe formattate
+     */
     private static List<String> estraiArrayStringhe(String arrayContent) {
         List<String> list = new ArrayList<>();
         if (arrayContent == null || arrayContent.trim().isEmpty())
@@ -432,6 +453,14 @@ public class JsonUtil {
         return sb.toString();
     }
 
+    /**
+     * Ripristina le proposte gestendo l'architettura Observer per il tracciamento
+     * di chi si è iscritto fino all'ultimo salvataggio.
+     * 
+     * @param json blocco del file JSON proposte relative al batch di oggetti
+     * @param gestore mappatura delle categorie valide di riferimento
+     * @return le proposte correttamente riagganciate allo strato Model
+     */
     public static List<Proposta> leggiProposte(String json, GestoreCategorie gestore) {
         List<Proposta> risultato = new ArrayList<>();
         String arrayContent = estraiBlocco(json, "proposte");

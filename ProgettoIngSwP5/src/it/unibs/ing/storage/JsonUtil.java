@@ -97,6 +97,13 @@ public class JsonUtil {
         return sb.toString();
     }
 
+    /**
+     * Codifica in JSON le credenziali ed i privilegi legati agli Utenti, 
+     * trattando in maniera specifica gli stream di notifica dei Fruitori.
+     * 
+     * @param utenti lista del parco utenti attualmente memorizzato dal sistema
+     * @return payload JSON corrispondente
+     */
     public static String scriviUtenti(List<Utente> utenti) {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");
@@ -154,6 +161,13 @@ public class JsonUtil {
         return gestore;
     }
 
+    /**
+     * Ricostruisce Fruitori e Configuratori preservando lo storico completo 
+     * dei messaggi non letti nel framework Observer.
+     * 
+     * @param json file di salvataggio letto in forma stringa
+     * @return resoconto degli utenti parsati
+     */
     public static List<Utente> leggiUtenti(String json) {
         List<Utente> utenti = new ArrayList<>();
         List<String> blocchiUtenti = estraiOggettiTopLevel(estraiBlocco(json, "utenti"));
@@ -378,6 +392,12 @@ public class JsonUtil {
         }
     }
 
+    /**
+     * Isola e spacchetta un array JSON composto primariamente di stringhe.
+     * 
+     * @param arrayContent stringa raw puntata sul nodo array
+     * @return riga o set di stringhe in List
+     */
     private static List<String> estraiArrayStringhe(String arrayContent) {
         List<String> list = new ArrayList<>();
         if (arrayContent == null || arrayContent.trim().isEmpty())
@@ -451,6 +471,14 @@ public class JsonUtil {
         return sb.toString();
     }
 
+    /**
+     * Effettua l'unmarshalling delle proposte aperte/chiuse salvate precedentemente 
+     * dalla memoria fissa, ripopolando anche l'elenco observer virtuale degli iscritti.
+     * 
+     * @param json file in formato raw contenitore di proposte
+     * @param gestore handler in grado di tradurre i codici di categoria nelle referenze al Model
+     * @return listato di referenze attive di Proposte pronte a ripopolare la Bacheca
+     */
     public static List<Proposta> leggiProposte(String json, GestoreCategorie gestore) {
         List<Proposta> risultato = new ArrayList<>();
         String arrayContent = estraiBlocco(json, "proposte");

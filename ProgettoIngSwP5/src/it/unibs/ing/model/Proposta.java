@@ -47,6 +47,12 @@ public class Proposta implements Observable {
         return stato;
     }
 
+    /**
+     * Sostituisce lo Stato e, in caso di variazione rispetto all'esistente, 
+     * innesca le Notifiche Observer a tutti gli iscritti.
+     * 
+     * @param nuovoStato enumerazione nuova per la vita della proposta
+     */
     public void setStato(StatoProposta nuovoStato) {
         if (this.stato != nuovoStato) {
             this.stato = nuovoStato;
@@ -88,6 +94,11 @@ public class Proposta implements Observable {
         }
     }
 
+    /**
+     * Ispeziona i posti totali confrontandoli con quelli occupati.
+     * 
+     * @return booleano di idoneità all'iscrizione
+     */
     public boolean puoIscrivere() {
         try {
             int maxPartecipanti = Integer.parseInt(getValore("Numero di partecipanti"));
@@ -97,6 +108,13 @@ public class Proposta implements Observable {
         }
     }
 
+    /**
+     * Allega il Fruitore alla proposta, ma non lo instrada come Observer.
+     * Avverrà un controllo automatico in altre fasi per riagganciarlo come listener.
+     * 
+     * @param usernameFruitore username univoco
+     * @return l'esito del tesseramento all'evento
+     */
     public boolean aggiungiIscritto(String usernameFruitore) {
         if (!iscritti.contains(usernameFruitore) && puoIscrivere()) {
             iscritti.add(usernameFruitore);
@@ -109,6 +127,12 @@ public class Proposta implements Observable {
         return iscritti.remove(usernameFruitore);
     }
 
+    /**
+     * Valutazione robusta che copre campi generici e parsing rigoroso delle scadenze.
+     * Imposta implicitamente lo stato a VALIDA e lo restituisce.
+     * 
+     * @return true se tutti i criteri temporali e formali della categoria sono assecondati
+     */
     public boolean verificaValidita() {
 
         for (Campo c : categoria.getCampi().values()) {
@@ -148,6 +172,12 @@ public class Proposta implements Observable {
         return true;
     }
 
+    /**
+     * Consente un'immissione formale della proposta rendendola pubblica ed APERTA
+     * all'adesione dei fruitori di sistema.
+     * 
+     * @throws IllegalStateException se i requisiti logico-formali non sono pronti
+     */
     public void pubblica() {
         if (this.stato == StatoProposta.VALIDA || verificaValidita()) {
             this.stato = StatoProposta.APERTA;

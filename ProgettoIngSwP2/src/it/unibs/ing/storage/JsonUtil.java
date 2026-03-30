@@ -17,6 +17,12 @@ import java.util.Map;
 
 public class JsonUtil {
 
+    /**
+     * Serializza l'albero delle categorie e dei campi comuni in formato JSON.
+     * 
+     * @param gestore il gestore categorie da salvare
+     * @return la stringa JSON formattata
+     */
     public static String scriviCategorie(GestoreCategorie gestore) {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");
@@ -121,6 +127,12 @@ public class JsonUtil {
         return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
     }
 
+    /**
+     * Ripristina il GestoreCategorie a partire da una stringa JSON di salvataggio.
+     * 
+     * @param json la stringa JSON
+     * @return il gestore popolato
+     */
     public static GestoreCategorie leggiCategorie(String json) {
 
         GestoreCategorie gestore = new GestoreCategorie();
@@ -325,6 +337,12 @@ public class JsonUtil {
         }
     }
 
+    /**
+     * Converte un elenco di proposte in una stringa JSON compatibile con il sistema.
+     * 
+     * @param proposte la lista delle proposte da convertire
+     * @return il JSON relativo alle proposte
+     */
     public static String scriviProposte(List<Proposta> proposte) {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");
@@ -355,6 +373,14 @@ public class JsonUtil {
         return sb.toString();
     }
 
+    /**
+     * Estrae la lista delle proposte da una stringa JSON, 
+     * ripristinando categorizzazione e valori interni dei vari campi.
+     * 
+     * @param json la stringa JSON sorgente
+     * @param gestore il gestore delle categorie per ricreare i riferimenti corretti
+     * @return la lista delle proposte de-serializzate
+     */
     public static List<Proposta> leggiProposte(String json, GestoreCategorie gestore) {
         List<Proposta> risultato = new ArrayList<>();
         String arrayContent = estraiBlocco(json, "proposte");
@@ -391,6 +417,13 @@ public class JsonUtil {
         return risultato;
     }
 
+    /**
+     * Metodo di parsificazione specifico per tradurre un dizionario chiave-valore JSON
+     * in una mappa String-String.
+     * 
+     * @param oggetto il contenuto dell'oggetto JSON ('{'...'}')
+     * @return la mappa di associazioni (chiave -> valore stringa)
+     */
     private static Map<String, String> estraiMappaStringhe(String oggetto) {
         Map<String, String> mappa = new HashMap<>();
 

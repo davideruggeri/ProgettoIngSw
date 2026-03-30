@@ -41,6 +41,12 @@ public class GestoreProposte {
         return proposta.verificaValidita();
     }
 
+    /**
+     * Tenta di rendere la proposta APERTA e la appende alla bacheca.
+     * 
+     * @param proposta la proposta approvata in fase di creazione
+     * @throws IllegalArgumentException in caso di proposta non valida
+     */
     public void pubblicaProposta(Proposta proposta) {
         try {
             proposta.pubblica();
@@ -50,6 +56,12 @@ public class GestoreProposte {
         }
     }
 
+    /**
+     * Aggancia gli iscritti come Observer sulla proposta.
+     * 
+     * @param p la proposta in analisi
+     * @param sessione l'insieme di account per cercare gli Utenti corrispettivi agli username
+     */
     private void collegaObservers(Proposta p, GestoreSessione sessione) {
         for (String username : p.getIscritti()) {
             Utente u = sessione.getUtente(username);
@@ -59,6 +71,15 @@ public class GestoreProposte {
         }
     }
 
+    /**
+     * Annulla volontariamente una proposta aperta o confermata che non abbia
+     * ancora raggiunto la "Data" di svolgimento. Attiva il ciclo degli observer
+     * inviando notifiche di ritiro per forza maggiore.
+     * 
+     * @param proposta la proposta da sopprimere
+     * @param sessione la sessione corrente
+     * @return true in caso il ritiro sia ammissibile, false per limiti di tempo raggiunti
+     */
     public boolean ritiraProposta(Proposta proposta, GestoreSessione sessione) {
         if (proposta.getStato() == StatoProposta.APERTA || proposta.getStato() == StatoProposta.CONFERMATA) {
             String dataInizioStr = proposta.getValore("Data");
@@ -81,6 +102,13 @@ public class GestoreProposte {
         return false;
     }
 
+    /**
+     * Routine principale per aggiornare lo stato di vita 
+     * di tutte le proposte in bacheca in funzione della data di sistema odierna,
+     * determinando CONFERMA, ANNULLAMENTO o CONCLUSIONE dell'evento.
+     * 
+     * @param sessione la sessione con i riferimenti reali agli Observer da avvisare
+     */
     public void controllaScadenze(GestoreSessione sessione) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDate oggi = LocalDate.now();
