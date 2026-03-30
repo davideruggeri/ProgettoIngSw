@@ -1,9 +1,0 @@
-{
-  "utenti": [
-    {"nomeUtente": "admin", "password": "1234", "ruolo": "CONFIGURATORE"},
-    {"nomeUtente": "admin2", "password": "12345", "ruolo": "CONFIGURATORE"},
-    {"nomeUtente": "Davide", "password": "Davide3", "ruolo": "FRUITORE", "notifiche": []},
-    {"nomeUtente": "Paolo", "password": "Paolo1", "ruolo": "FRUITORE", "notifiche": []},
-    {"nomeUtente": "Aldo", "password": "Aldo1", "ruolo": "FRUITORE", "notifiche": []}
-  ]
-}

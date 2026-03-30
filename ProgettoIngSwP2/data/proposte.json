@@ -1,0 +1,46 @@
+{
+  "proposte": [
+    {
+      "categoria": "Gita fuori porta",
+      "stato": "APERTA",
+      "campi": {
+        "Titolo": "Ciaspolata",
+        "Numero di partecipanti": "30",
+        "Termine ultimo di iscrizione": "10/12/2026",
+        "Luogo": "Tonale",
+        "Data": "15/12/2026",
+        "Ora": "6:00",
+        "Quota individuale": "25",
+        "Data conclusiva": "15/12/2026"
+      }
+    },
+    {
+      "categoria": "Gita fuori porta",
+      "stato": "APERTA",
+      "campi": {
+        "Titolo": "Castagnata",
+        "Numero di partecipanti": "15",
+        "Termine ultimo di iscrizione": "15/10/2026",
+        "Luogo": "Castagneto",
+        "Data": "25/10/2026",
+        "Ora": "15:00",
+        "Quota individuale": "5",
+        "Data conclusiva": "25/10/2026"
+      }
+    },
+    {
+      "categoria": "Torneo",
+      "stato": "APERTA",
+      "campi": {
+        "Titolo": "Curiff",
+        "Numero di partecipanti": "90",
+        "Termine ultimo di iscrizione": "15/05/2026",
+        "Luogo": "Toscolano",
+        "Data": "04/06/2026",
+        "Ora": "18:00",
+        "Quota individuale": "65",
+        "Data conclusiva": "07/06/2026"
+      }
+    }
+  ]
+}
