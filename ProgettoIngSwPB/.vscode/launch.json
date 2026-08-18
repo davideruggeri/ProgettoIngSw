@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "PropostaTest",
+      "request": "launch",
+      "mainClass": "it.unibs.ing.test.PropostaTest",
+      "projectName": "ProgettoIngSwPB"
+    },
+    {
+      "type": "java",
+      "name": "MainCLI (PB)",
+      "request": "launch",
+      "mainClass": "it.unibs.ing.view.MainCLI",
+      "projectName": "ProgettoIngSwPB",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

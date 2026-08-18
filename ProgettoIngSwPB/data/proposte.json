@@ -1,0 +1,124 @@
+{
+  "proposte": [
+    {
+      "categoria": "Gita fuori porta",
+      "stato": "APERTA",
+      "campi": {
+        "Data conclusiva": "15/12/2026",
+        "Titolo": "Ciaspolata",
+        "Termine ultimo di iscrizione": "10/12/2026",
+        "Quota individuale": "25.5",
+        "Data": "15/12/2026",
+        "Numero di partecipanti": "30",
+        "Luogo": "Tonale",
+        "Ora": "6:00"
+      },
+      "iscritti": []
+    },
+    {
+      "categoria": "Gita fuori porta",
+      "stato": "APERTA",
+      "campi": {
+        "Data conclusiva": "25/10/2026",
+        "Titolo": "Castagnata",
+        "Termine ultimo di iscrizione": "15/10/2026",
+        "Quota individuale": "5.0",
+        "Data": "25/10/2026",
+        "Numero di partecipanti": "15",
+        "Luogo": "Castagneto",
+        "Ora": "15:00"
+      },
+      "iscritti": ["Paolo"]
+    },
+    {
+      "categoria": "Gita fuori porta",
+      "stato": "CONFERMATA",
+      "campi": {
+        "Data conclusiva": "12/05/2026",
+        "Titolo": "Picnic al lago",
+        "Termine ultimo di iscrizione": "10/05/2026",
+        "Quota individuale": "10.0",
+        "Data": "12/05/2026",
+        "Numero di partecipanti": "2",
+        "Luogo": "Lago di Garda",
+        "Ora": "10:30"
+      },
+      "iscritti": ["Davide", "Paolo"]
+    },
+    {
+      "categoria": "Gita fuori porta",
+      "stato": "ANNULLATA",
+      "campi": {
+        "Data conclusiva": "10/01/2026",
+        "Titolo": "Camminata nel bosco",
+        "Termine ultimo di iscrizione": "01/01/2026",
+        "Quota individuale": "5.0",
+        "Data": "10/01/2026",
+        "Numero di partecipanti": "50",
+        "Luogo": "Parco Nord",
+        "Ora": "09:00"
+      },
+      "iscritti": []
+    },
+    {
+      "categoria": "Torneo",
+      "stato": "APERTA",
+      "campi": {
+        "Data conclusiva": "07/06/2026",
+        "Titolo": "Curiff",
+        "Termine ultimo di iscrizione": "15/05/2026",
+        "Quota individuale": "65.0",
+        "Data": "04/06/2026",
+        "Numero di partecipanti": "90",
+        "Luogo": "Toscolano",
+        "Ora": "18:00"
+      },
+      "iscritti": []
+    },
+    {
+      "categoria": "Torneo",
+      "stato": "CONFERMATA",
+      "campi": {
+        "Data conclusiva": "20/04/2026",
+        "Titolo": "Torneo tennis",
+        "Termine ultimo di iscrizione": "15/04/2026",
+        "Quota individuale": "15.0",
+        "Data": "20/04/2026",
+        "Numero di partecipanti": "2",
+        "Luogo": "Circolo",
+        "Ora": "15:00"
+      },
+      "iscritti": ["Davide", "Paolo"]
+    },
+    {
+      "categoria": "Torneo",
+      "stato": "RITIRATA",
+      "campi": {
+        "Data conclusiva": "21/08/2026",
+        "Titolo": "Golf",
+        "Termine ultimo di iscrizione": "17/08/2026",
+        "Quota individuale": "30.0",
+        "Data": "20/08/2026",
+        "Numero di partecipanti": "3",
+        "Luogo": "Campi da Golf",
+        "Ora": "15:30"
+      },
+      "iscritti": []
+    },
+    {
+      "categoria": "Torneo",
+      "stato": "CONCLUSA",
+      "campi": {
+        "Data conclusiva": "10/02/2026",
+        "Titolo": "Torneo biliardo",
+        "Termine ultimo di iscrizione": "05/02/2026",
+        "Quota individuale": "10.0",
+        "Data": "10/02/2026",
+        "Numero di partecipanti": "2",
+        "Luogo": "Sala Giochi",
+        "Ora": "21:00"
+      },
+      "iscritti": ["Davide", "Paolo"]
+    }
+  ]
+}
