@@ -4,14 +4,28 @@
       "nome": "Gita fuori porta",
       "descrizione": "Uscita ricreativa in un luogo fuori dalla città",
       "campi": [
-        {"nome": "Data conclusiva", "descrizione": "Data di conclusione iniziativa", "obbligatorio": true, "tipo": "DATA"}
+        {"nome": "Data conclusiva", "descrizione": "Data di conclusione iniziativa", "obbligatorio": true, "tipo": "DATA"},
+        {"nome": "Titolo", "descrizione": "Nome di fantasia dell'iniziativa", "obbligatorio": true, "tipo": "STRINGA"},
+        {"nome": "Termine ultimo di iscrizione", "descrizione": "Ultimo giorno utile per iscriversi", "obbligatorio": true, "tipo": "DATA"},
+        {"nome": "Quota individuale", "descrizione": "Spesa prevista per partecipante", "obbligatorio": true, "tipo": "INTERO"},
+        {"nome": "Data", "descrizione": "Data di svolgimento o inizio", "obbligatorio": true, "tipo": "DATA"},
+        {"nome": "Numero di partecipanti", "descrizione": "Numero persone da coinvolgere", "obbligatorio": true, "tipo": "INTERO"},
+        {"nome": "Luogo", "descrizione": "Indirizzo o luogo di ritrovo", "obbligatorio": true, "tipo": "STRINGA"},
+        {"nome": "Ora", "descrizione": "Ora di ritrovo", "obbligatorio": true, "tipo": "ORA"}
       ]
     },
     {
       "nome": "Torneo",
       "descrizione": "Competizione sportiva o ludica tra partecipanti",
       "campi": [
-        {"nome": "Data conclusiva", "descrizione": "Data di conclusione iniziativa", "obbligatorio": true, "tipo": "DATA"}
+        {"nome": "Data conclusiva", "descrizione": "Data di conclusione iniziativa", "obbligatorio": true, "tipo": "DATA"},
+        {"nome": "Titolo", "descrizione": "Nome di fantasia dell'iniziativa", "obbligatorio": true, "tipo": "STRINGA"},
+        {"nome": "Termine ultimo di iscrizione", "descrizione": "Ultimo giorno utile per iscriversi", "obbligatorio": true, "tipo": "DATA"},
+        {"nome": "Quota individuale", "descrizione": "Spesa prevista per partecipante", "obbligatorio": true, "tipo": "INTERO"},
+        {"nome": "Data", "descrizione": "Data di svolgimento o inizio", "obbligatorio": true, "tipo": "DATA"},
+        {"nome": "Numero di partecipanti", "descrizione": "Numero persone da coinvolgere", "obbligatorio": true, "tipo": "INTERO"},
+        {"nome": "Luogo", "descrizione": "Indirizzo o luogo di ritrovo", "obbligatorio": true, "tipo": "STRINGA"},
+        {"nome": "Ora", "descrizione": "Ora di ritrovo", "obbligatorio": true, "tipo": "ORA"}
       ]
     }
   ],
@@ -22,7 +36,8 @@
     {"nome": "Luogo", "descrizione": "Indirizzo o luogo di ritrovo", "obbligatorio": true, "tipo": "STRINGA"},
     {"nome": "Data", "descrizione": "Data di svolgimento o inizio", "obbligatorio": true, "tipo": "DATA"},
     {"nome": "Ora", "descrizione": "Ora di ritrovo", "obbligatorio": true, "tipo": "ORA"},
-    {"nome": "Quota individuale", "descrizione": "Spesa prevista per partecipante", "obbligatorio": true, "tipo": "DOUBLE"}
+    {"nome": "Quota individuale", "descrizione": "Spesa prevista per partecipante", "obbligatorio": true, "tipo": "INTERO"},
+    {"nome": "Data conclusiva", "descrizione": "Data di conclusione iniziativa", "obbligatorio": true, "tipo": "DATA"}
   ],
   "campiComuni": []
 }

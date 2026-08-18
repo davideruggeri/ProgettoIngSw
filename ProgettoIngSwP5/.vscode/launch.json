@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "MainCLI (P5)",
+      "request": "launch",
+      "mainClass": "it.unibs.ing.view.MainCLI",
+      "projectName": "ProgettoIngSwP5",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

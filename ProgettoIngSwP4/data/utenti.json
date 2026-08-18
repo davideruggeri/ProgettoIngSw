@@ -2,8 +2,8 @@
   "utenti": [
     {"nomeUtente": "admin", "password": "1234", "ruolo": "CONFIGURATORE"},
     {"nomeUtente": "admin2", "password": "12345", "ruolo": "CONFIGURATORE"},
-    {"nomeUtente": "Davide", "password": "Davide3", "ruolo": "FRUITORE"},
-    {"nomeUtente": "Paolo", "password": "Paolo1", "ruolo": "FRUITORE"},
-    {"nomeUtente": "Aldo", "password": "Aldo1", "ruolo": "FRUITORE"}
+    {"nomeUtente": "Davide", "password": "Davide3", "ruolo": "FRUITORE", "notifiche": ["La proposta 'Gita fuori porta' ha cambiato stato in: CONFERMATA", "La proposta 'Torneo' ha cambiato stato in: CONFERMATA"]},
+    {"nomeUtente": "Paolo", "password": "Paolo1", "ruolo": "FRUITORE", "notifiche": ["La proposta 'Gita fuori porta' ha cambiato stato in: CONFERMATA", "La proposta 'Torneo' ha cambiato stato in: CONFERMATA"]},
+    {"nomeUtente": "Aldo", "password": "Aldo1", "ruolo": "FRUITORE", "notifiche": []}
   ]
 }
